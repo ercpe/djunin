@@ -1,8 +1,8 @@
-{% load opensearch_tags %}<!DOCTYPE html>
+{% comment %}{% load opensearch_tags %}{% endcomment %}{% load staticfiles %}<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		{% block whole_title %}<title>{% block title %}{% endblock %} - djunin</title>{% endblock %}
+		{% block whole_title %}<title>{% block title %}{{page_title}}{% endblock %} - djunin</title>{% endblock %}
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -11,11 +11,13 @@
 
 		{% block head %}{% endblock %}
 
-		<link href="{{STATIC_URL}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
-		<link href="{{STATIC_URL}}site.css" rel="stylesheet">
+		<link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+		<link href="{% static 'site.css' %}" rel="stylesheet">
 		{% block styles %}{% endblock %}
 
+		{% comment %}
 		{% opensearch_meta %}
+		{% endcomment %}
 	</head>
 	<body>
 		<div class="container">
