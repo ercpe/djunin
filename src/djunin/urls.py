@@ -20,5 +20,5 @@ from djunin.views.dashboard import DashboardView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', DashboardView.as_view(), name='dashbaord'),
+    url(r'^$', DashboardView.as_view(), name='dashboard'),
 ]
