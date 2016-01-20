@@ -17,8 +17,11 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from djunin.views.dashboard import DashboardView
+from djunin.views.nodes import NodesListView, GraphsListView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', DashboardView.as_view(), name='dashboard'),
+	url(r'^nodes/(?P<node>[^/]+)$', GraphsListView.as_view(), name='graphs'),
+	url(r'^nodes$', NodesListView.as_view(), name='nodes'),
+	url(r'^$', DashboardView.as_view(), name='dashboard'),
 ]

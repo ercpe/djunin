@@ -1,0 +1,8 @@
+{% extends "template.html" %}
+
+{% block content %}
+	{% for graph in graphs %}
+		<h2>{{graph}}</h2>
+	{% endfor %}
+	{{graphs}}
+{% endblock %}

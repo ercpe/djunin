@@ -1,0 +1,13 @@
+{% extends "template.html" %}
+
+{% block content %}
+	{% regroup nodes by group as grouped_nodes %}
+	{% for group in grouped_nodes %}
+		<h2>{{group.grouper}}</h2>
+		<ul>
+			{% for node in group.list %}
+				<li><a href="{% url 'graphs' node.name %}" title="{{node}}">{{node}}</a></li>
+			{% endfor %}
+		</ul>
+	{% endfor %}
+{% endblock %}
