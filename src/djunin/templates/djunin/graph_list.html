@@ -3,7 +3,7 @@
 {% block content %}
 	{% regroup graphs by graph_category as grouped_graphs %}
 	{% for group in grouped_graphs %}
-		<h2>{{group.grouper}}</h2>
+		<h2>{{group.grouper|default:"other"}}</h2>
 		<ul>
 			{% for graph in group.list %}
 				<div>
