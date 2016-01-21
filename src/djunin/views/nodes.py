@@ -19,5 +19,5 @@ class GraphsListView(BaseViewMixin, TemplateView):
 	template_name = 'graphs.html'
 
 	def get_context_data(self, **kwargs):
-		graphs = Graph.objects.filter(node__name=self.kwargs['node'])
+		graphs = Graph.objects.filter(node__name=self.kwargs['node'], parent=None)
 		return super(GraphsListView, self).get_context_data(graphs=graphs, **kwargs)
