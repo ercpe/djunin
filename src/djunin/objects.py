@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import itertools
+import os
 import re
+
+from django.conf import settings
 
 line_re = re.compile("^(?P<group_name>.+);(?P<node_name>[^:]+):(?P<graph>[^\.]+)\.(?P<key>[^\s]+?) (?P<value>.*)$")
 
@@ -34,10 +37,10 @@ class Graph(object):
 
 class MuninDataFile(object):
 
-	def __init__(self, path):
+	def __init__(self):
 		self._nodes = None
 
-		with open(path, 'r') as f:
+		with open(os.path.join(settings.MUNIN_DATA_DIR, 'datafile'), 'r') as f:
 			self.parse(f.readlines()[1:])
 
 	def parse(self, lines):
