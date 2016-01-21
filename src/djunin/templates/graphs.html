@@ -1,8 +1,15 @@
 {% extends "template.html" %}
 
 {% block content %}
-	{% for graph in graphs %}
-		<h2>{{graph}}</h2>
+	{% regroup graphs by graph_category as grouped_graphs %}
+	{% for group in grouped_graphs %}
+		<h2>{{group.grouper}}</h2>
+		<ul>
+			{% for graph in group.list %}
+				<div>
+					{{graph}}
+				</div>
+			{% endfor %}
+		</ul>
 	{% endfor %}
-	{{graphs}}
 {% endblock %}

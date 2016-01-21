@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext as _
 from django.views.generic import TemplateView
 
+from djunin.models.muninobj import Node, Graph
 from djunin.views.base import BaseViewMixin
 
 class NodesListView(BaseViewMixin, TemplateView):
@@ -9,7 +10,8 @@ class NodesListView(BaseViewMixin, TemplateView):
 	template_name = 'nodes.html'
 
 	def get_context_data(self, **kwargs):
-		return super(NodesListView, self).get_context_data(nodes=self.data_file.nodes, **kwargs)
+		nodes = Node.objects.all()
+		return super(NodesListView, self).get_context_data(nodes=nodes, **kwargs)
 
 
 class GraphsListView(BaseViewMixin, TemplateView):
@@ -17,5 +19,5 @@ class GraphsListView(BaseViewMixin, TemplateView):
 	template_name = 'graphs.html'
 
 	def get_context_data(self, **kwargs):
-		node_graphs = [n.graphs for n in self.data_file.nodes][0]
-		return super(GraphsListView, self).get_context_data(graphs=node_graphs, **kwargs)
+		graphs = Graph.objects.filter(node__name=self.kwargs['node'])
+		return super(GraphsListView, self).get_context_data(graphs=graphs, **kwargs)

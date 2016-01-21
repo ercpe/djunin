@@ -11,7 +11,7 @@ class BaseViewMixin(object):
 	@property
 	def data_file(self):
 		if self._datafile is None:
-			self._datafile = MuninDataFile(getattr(settings, 'MUNIN_DATA_FILE', '/var/lib/munin/datafile'))
+			self._datafile = MuninDataFile()
 		return self._datafile
 
 	def get_context_data(self, **kwargs):
