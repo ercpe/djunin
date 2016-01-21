@@ -17,6 +17,9 @@ class Command(BaseCommand):
 
 			def _save_graph(n, g, parent=None):
 				category = g.options.get('graph_category', None)
+				if category:
+					category = category.lower()
+
 				graph, graph_created = Graph.objects.get_or_create(node=n, name=g.name, defaults={
 					'parent': parent,
 					'graph_category': category
