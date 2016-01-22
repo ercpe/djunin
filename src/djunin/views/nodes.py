@@ -13,7 +13,14 @@ class NodesListView(BaseViewMixin, TemplateView):
 
 	def get_context_data(self, **kwargs):
 		nodes = Node.objects.all()
+
+		if 'group' in kwargs:
+			nodes = nodes.filter(group=kwargs['group'])
+
 		return super(NodesListView, self).get_context_data(nodes=nodes, **kwargs)
+
+	def get_page_title(self):
+		return self.kwargs.get('group', self.page_title)
 
 
 class GraphsListView(BaseViewMixin, ListView):
