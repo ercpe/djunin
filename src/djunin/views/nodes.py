@@ -15,7 +15,7 @@ class NodesListView(BaseViewMixin, ListView):
 		return self.kwargs.get('group', self.page_title)
 
 	def get_queryset(self):
-		nodes = self.model.objects.all()
+		nodes = Node.objects.all()
 
 		if 'group' in self.kwargs:
 			nodes = nodes.filter(group=self.kwargs['group'])
@@ -23,7 +23,7 @@ class NodesListView(BaseViewMixin, ListView):
 		return nodes
 
 
-class GraphsListView(BaseViewMixin, ListView):
+class GraphsListView(NodesListView):
 	model = Graph
 	context_object_name = 'graphs'
 	sidebar_item = 'nodes'
@@ -32,9 +32,9 @@ class GraphsListView(BaseViewMixin, ListView):
 		return Node.objects.get(name=self.kwargs['node']).name
 
 	def get_context_data(self, **kwargs):
-		return super(GraphsListView, self).get_context_data(**kwargs)
+		return super(GraphsListView, self).get_context_data(nodes=super(GraphsListView, self).get_queryset(), **kwargs)
 
 	def get_queryset(self):
-		return super(GraphsListView, self).get_queryset().\
+		return super(ListView, self).get_queryset().\
 			filter(node__group=self.kwargs['group'], node__name=self.kwargs['node'], parent=None).\
 			order_by('graph_category', 'name')
