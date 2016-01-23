@@ -4,6 +4,7 @@
 {% block styles %}
 	<script type="text/javascript" src="{% static 'jquery.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'flot/jquery.flot.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'flot/jquery.flot.time.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -11,7 +12,7 @@
 	<div class="node-graphs" data-graph-spec="{% url 'graphs_spec' node.group node.name %}">
 		{% regroup graphs by graph_category as grouped_graphs %}
 		{% for group in grouped_graphs %}
-			<h2>{{group.grouper|default:"other"}}</h2>
+			<h2 id="{{group.grouper|default:"other"}}">{{group.grouper|default:"other"}}</h2>
 
 			{% for graph in group.list %}
 				<p class="text-muted">{{graph}}</p>
