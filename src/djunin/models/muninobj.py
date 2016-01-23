@@ -57,6 +57,8 @@ class DataRow(ModelBase):
 	graph = models.ForeignKey(Graph, related_name='datarows')
 	name = models.CharField(max_length=250, db_index=True)
 
+	rrdfile = models.CharField(unique=True, max_length=255)
+
 	class Meta(ModelBase.Meta):
 		unique_together = 'graph', 'name'
 

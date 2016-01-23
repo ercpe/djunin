@@ -30,7 +30,9 @@ class Command(BaseCommand):
 
 				for dr_name, dr_values in g.datarows.items():
 					logger.debug("Creating datarow %s on %s/%s", dr_name, graph.parent, graph)
-					datarow, datarow_created = DataRow.objects.get_or_create(graph=graph, name=dr_name)
+					datarow, datarow_created = DataRow.objects.update_or_create(graph=graph, name=dr_name, defaults={
+						'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values)
+					})
 					for k, v in dr_values.items():
 						DataRowOption.objects.get_or_create(datarow=datarow, key=k, value=v)
 					DataRowOption.objects.filter(datarow=datarow).exclude(key__in=dr_values.keys())
@@ -66,3 +68,15 @@ class Command(BaseCommand):
 				if not node_created:
 					q = Graph.objects.filter(node=node, parent=None).exclude(name__in=[g.name for g in munin_node.graphs])
 					q.delete()
+
+	def get_rrdfilename(self, graph, datarow_name, datarow_options):
+		dr_type_name = datarow_options.get('type', 'GAUGE')
+
+		pattern = "{group}/{node}-{graph}-{datarow}-{datarow_type}.rrd"
+		if graph.parent:
+			pattern = "{group}/{node}-{graph}-{subgraph}-{datarow}-{datarow_type}.rrd"
+
+		return pattern.format(group=graph.node.group, node=graph.node.name,
+							  graph=graph.parent.name if graph.parent else graph.name,
+							  subgraph=graph.name if graph.parent else None,
+							  datarow=datarow_name, datarow_type=dr_type_name.lower()[0])
