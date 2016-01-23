@@ -17,10 +17,12 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from djunin.views.dashboard import DashboardView
-from djunin.views.nodes import NodesListView, GraphsListView
+from djunin.views.nodes import NodesListView, GraphsListView, NodeGraphsSpecView, GraphDataView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
+	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/data$', GraphDataView.as_view(), name='graph_data'),
+	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/spec$', NodeGraphsSpecView.as_view(), name='graphs_spec'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),
 	url(r'^nodes$', NodesListView.as_view(), name='nodes'),
