@@ -63,7 +63,7 @@ class FlotGraphOptsGenerator(GraphOptsGenerator):
 		if graph.graph_args_lower_limit is not None:
 			opts['yaxis']['min'] = graph.graph_args_lower_limit
 		if graph.graph_args_upper_limit is not None:
-			opts['yaxis']['upper'] = graph.graph_args_upper_limit
+			opts['yaxis']['max'] = graph.graph_args_upper_limit
 
 		return opts
 
@@ -72,7 +72,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 
 	def generate(self, node, graph, data_scope=SCOPE_DAY):
 		def _gen():
-			logger.debug("Node %s, graph %s datarows: %s", node, graph, graph.datarows.all())
 			invert_datarows = graph.datarows.filter(do_graph=True).exclude(negative='').values_list('negative', flat=True)
 			graph_datarows = graph.datarows.filter(Q(do_graph=True) | Q(do_graph=False, name__in=invert_datarows)).order_by('name')
 
@@ -129,8 +128,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			logger.error("Don't know what to do with %s" % cdef)
 
 		field, value, operator = chunks
-
-		logger.debug("Field: %s (%s), Value: %s (%s), Operator: %s (%s)", field, type(field), value, type(value), operator, type(operator))
 
 		if operator == '/':
 			return lambda x: x / float(value)

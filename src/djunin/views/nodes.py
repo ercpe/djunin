@@ -62,27 +62,6 @@ class GraphsListView(NodesListView):
 			order_by('graph_category', 'name')
 
 
-# class NodeGraphsSpecView(GraphsListView):
-#
-# 	def render_to_response(self, context, **response_kwargs):
-# 		d = {}
-#
-# 		for graph in self.get_queryset():
-# 			datarows = {}
-#
-# 			for dr in graph.datarows.all():
-# 				datarows[dr.name] = {
-# 					'label': dr.label or None,
-# 				}
-#
-# 			d[graph.name] = {
-# 				'datarows': datarows
-# 			}
-#
-# 		opts =
-# 		return HttpResponse(json.dumps(opts), content_type='application/json')
-
-
 class GraphDataView(DetailView):
 	model = Graph
 	slug_url_kwarg = 'name'
