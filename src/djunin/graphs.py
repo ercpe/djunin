@@ -34,11 +34,19 @@ class GraphDataGenerator(object):
 class FlotGraphOptsGenerator(GraphOptsGenerator):
 
 	def generate(self, node, graph):
+		stack = any(((dr.draw or '') == 'STACK' for dr in graph.datarows.all()))
 		opts = {
 			'series': {
+				'stack': stack,
 				'lines': {
-					'show': True
+					'show': True,
+					'fill': stack,
+					'steps': stack,
 				},
+				# 'bars': {
+				# 	'show': stack and False,
+				# 	'barWidth': 0,
+				# },
 				'points': {
 					'show': False
 				}
@@ -77,12 +85,16 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 
 			if graph.graph_order:
 				db_datarows = list(graph_datarows)
-				datarows = []
-				for dr_name in set(graph.graph_order.split(' ')):
-					datarows.append([x for x in db_datarows if x.name == dr_name][0])
+				datarows = OrderedDict()
+				for dr_name in graph.graph_order.split(' '):
+					if dr_name not in datarows:
+						datarows[dr_name] = [x for x in db_datarows if x.name == dr_name][0]
+				datarows = datarows.values()
 			else:
 				datarows = graph_datarows
 
+			logger.debug("Sorted datarows: %s", [dr.name for dr in datarows])
+			logger.debug("Graph order:     %s", graph.graph_order)
 
 			for dr in datarows:
 				flot_opts = {
