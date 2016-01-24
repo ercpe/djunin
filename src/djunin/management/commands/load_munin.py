@@ -67,7 +67,7 @@ class Command(BaseCommand):
 				del dr_opts['host_name']
 
 			if 'graph' in dr_opts:
-				dr_opts['do_graph'] = dr_opts['graph']
+				dr_opts['do_graph'] = dr_opts['graph'].lower() == "yes"
 				del dr_opts['graph']
 
 			DataRow.objects.update_or_create(graph=graph, name=dr_name, defaults=dr_opts)
