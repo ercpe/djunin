@@ -6,7 +6,7 @@ import shlex
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from djunin.models import Node, Graph, DataRow, DataRowOption
+from djunin.models import Node, Graph, DataRow
 from djunin.objects import MuninDataFile
 
 logger = logging.getLogger(__file__)
@@ -49,18 +49,28 @@ class Command(BaseCommand):
 		}
 		opts.update(g.options)
 		opts.update(self.parse_graph_args(g.options.get('graph_args', '')))
+		if 'host_name' in opts:
+			del opts['host_name']
 
 		# todo: fill opts with None to be able to remove options from the database
 		graph, graph_created = Graph.objects.update_or_create(node=n, name=g.name, defaults=opts)
 
 		for dr_name, dr_values in g.datarows.items():
 			logger.debug("Creating datarow %s on %s/%s", dr_name, graph.parent, graph)
-			datarow, datarow_created = DataRow.objects.update_or_create(graph=graph, name=dr_name, defaults={
+
+			# todo: fill opts with None to be able to remove options from the database
+			dr_opts = {
 				'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values)
-			})
-			for k, v in dr_values.items():
-				DataRowOption.objects.get_or_create(datarow=datarow, key=k, value=v)
-			DataRowOption.objects.filter(datarow=datarow).exclude(key__in=dr_values.keys())
+			}
+			dr_opts.update(dr_values)
+			if 'host_name' in dr_opts:
+				del dr_opts['host_name']
+
+			if 'graph' in dr_opts:
+				dr_opts['do_graph'] = dr_opts['graph']
+				del dr_opts['graph']
+
+			DataRow.objects.update_or_create(graph=graph, name=dr_name, defaults=dr_opts)
 
 		if not graph_created:
 			DataRow.objects.filter(graph=graph).exclude(name__in=g.datarows.keys()).delete()

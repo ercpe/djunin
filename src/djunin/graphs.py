@@ -76,15 +76,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 
 	def generate(self, node, graph, data_scope=SCOPE_DAY):
 		def _gen():
-			date_range = ""
-			if data_scope == SCOPE_DAY:
-				date_range = "-s -28h"
-			elif data_scope == SCOPE_WEEK:
-				date_range = "-s -176h"
-			elif data_scope == SCOPE_MONTH:
-				date_range = "-s -756h"
 
-			datarows = None
 			if graph.graph_order:
 				db_datarows = list(graph.datarows.all())
 				datarows = []
@@ -94,17 +86,9 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				datarows = graph.datarows.order_by('name')
 
 			for dr in datarows:
-				(start, end, resolution), (no,), data = rrdtool.fetch([str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), 'AVERAGE', date_range])
-				logger.debug("%s/%s: from %s to %s every %s sec", graph.name, dr.name, datetime.datetime.fromtimestamp(start), datetime.datetime.fromtimestamp(end), resolution)
-
-				dr_opts = dict(((dro.key, dro.value) for dro in dr.options.all()))
-
 				flot_opts = {
-					'label': dr_opts.get('label', dr.name),
-					'data': zip(
-						(x * 1000 for x in xrange(start, end, resolution)),
-						(x[0] for x in data)
-					),
+					'label': dr.label or None,
+					'data': self.get_data(str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), data_scope, 'AVERAGE')
 				}
 
 				yield flot_opts
@@ -113,3 +97,18 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			'graph_name': graph.name,
 			'datarows': list(_gen()),
 		}
+
+	def get_data(self, datafile, data_scope, *args):
+		date_range = ""
+		if data_scope == SCOPE_DAY:
+			date_range = "-s -28h"
+		elif data_scope == SCOPE_WEEK:
+			date_range = "-s -176h"
+		elif data_scope == SCOPE_MONTH:
+			date_range = "-s -756h"
+
+		(start, end, resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
+		return zip(
+			(x * 1000 for x in xrange(start, end, resolution)),
+			(x[0] for x in data)
+		)

@@ -13,14 +13,6 @@ class Node(ModelBase):
 		unique_together = 'group', 'name'
 
 
-class Option(ModelBase):
-	key = models.CharField(max_length=250, db_index=True)
-	value = models.TextField()
-
-	class Meta(ModelBase.Meta):
-		abstract = True
-
-
 class Graph(ModelBase):
 	node = models.ForeignKey(Node, related_name='graphs')
 	name = models.CharField(max_length=250)
@@ -57,12 +49,27 @@ class DataRow(ModelBase):
 
 	rrdfile = models.CharField(unique=True, max_length=255)
 
+	cdef = models.CharField(max_length=200, blank=True)
+	colour = models.CharField(max_length=7, blank=True)
+	critical = models.CharField(max_length=100, blank=True)
+	draw = models.CharField(max_length=100, blank=True)
+	do_graph = models.BooleanField(default=True)
+	graph_args = models.TextField(blank=True)
+	graph_category = models.CharField(max_length=250, null=True, blank=True)
+	graph_data_size = models.CharField(max_length=50, blank=True)
+	graph_info = models.TextField(blank=True)
+	graph_order = models.TextField(blank=True)
+	graph_scale = models.NullBooleanField()
+	graph_title = models.CharField(max_length=200, blank=True)
+	graph_vlabel = models.CharField(max_length=200, blank=True)
+	info = models.TextField(blank=True)
+	label = models.CharField(max_length=200, blank=True)
+	max = models.IntegerField(null=True, blank=True)
+	min = models.IntegerField(null=True, blank=True)
+	negative = models.CharField(max_length=200, blank=True)
+	type = models.CharField(max_length=200, blank=True)
+	update_rate = models.IntegerField(null=True, blank=True)
+	warning = models.CharField(max_length=100, blank=True)
+
 	class Meta(ModelBase.Meta):
 		unique_together = 'graph', 'name'
-
-
-class DataRowOption(Option):
-	datarow = models.ForeignKey(DataRow, related_name='options')
-
-	class Meta(ModelBase.Meta):
-		unique_together = 'datarow', 'key'

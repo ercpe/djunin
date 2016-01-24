@@ -70,9 +70,8 @@ class NodeGraphsSpecView(GraphsListView):
 			datarows = {}
 
 			for dr in graph.datarows.all():
-				dr_opts = dict(((dro.key, dro.value) for dro in dr.options.all()))
 				datarows[dr.name] = {
-					'label': dr_opts.get('label', dr.name)
+					'label': dr.label or None,
 				}
 
 			d[graph.name] = {
