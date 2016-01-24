@@ -9,27 +9,25 @@
 
 {% block content %}
 
-	<div class="node-graphs" data-graph-spec="{% url 'graphs_spec' node.group node.name %}">
-		{% regroup graphs by graph_category as grouped_graphs %}
-		{% for group in grouped_graphs %}
-			<h2 id="{{group.grouper|default:"other"}}">{{group.grouper|default:"other"}}</h2>
+	{% regroup graphs by graph_category as grouped_graphs %}
+	{% for group in grouped_graphs %}
+		<h2 id="{{group.grouper|default:"other"}}">{{group.grouper|default:"other"}}</h2>
 
-			{% for graph in group.list %}
-				<p class="text-muted">{{graph}}</p>
+		{% for graph in group.list %}
+			<p class="text-muted">{{graph}}</p>
 
-				<div class="row">
-					<div class="col-md-5">
-						<div id="graph-{{graph.name}}-daily" class="djunin-graph" style="height: 240px">
-						</div>
-					</div>
-					<div class="col-md-5 col-xs-hidden">
-						<div id="graph-{{graph.name}}-weekly" class="djunin-graph" style="height: 240px">
-						</div>
+			<div class="row">
+				<div class="col-md-5">
+					<div id="graph-{{graph.name}}-daily" class="djunin-graph" style="height: 240px" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}">
 					</div>
 				</div>
-			{% endfor %}
+				<div class="col-md-5 col-xs-hidden">
+					<div id="graph-{{graph.name}}-weekly" class="djunin-graph" style="height: 240px">
+					</div>
+				</div>
+			</div>
 		{% endfor %}
-	</div>
+	{% endfor %}
 
 	<script type="text/javascript" src="{% static 'site.js' %}"></script>
 {% endblock %}

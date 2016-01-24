@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
 from django.views.generic import View
@@ -58,28 +58,29 @@ class GraphsListView(NodesListView):
 	def get_queryset(self):
 		return super(ListView, self).get_queryset().\
 			filter(node=self.node, parent=None).\
+			select_related('node').\
 			order_by('graph_category', 'name')
 
 
-class NodeGraphsSpecView(GraphsListView):
-
-	def render_to_response(self, context, **response_kwargs):
-		d = {}
-
-		for graph in self.get_queryset():
-			datarows = {}
-
-			for dr in graph.datarows.all():
-				datarows[dr.name] = {
-					'label': dr.label or None,
-				}
-
-			d[graph.name] = {
-				'datarows': datarows
-			}
-
-		opts = FlotGraphOptsGenerator().generate(self.node, self.get_queryset())
-		return HttpResponse(json.dumps(opts), content_type='application/json')
+# class NodeGraphsSpecView(GraphsListView):
+#
+# 	def render_to_response(self, context, **response_kwargs):
+# 		d = {}
+#
+# 		for graph in self.get_queryset():
+# 			datarows = {}
+#
+# 			for dr in graph.datarows.all():
+# 				datarows[dr.name] = {
+# 					'label': dr.label or None,
+# 				}
+#
+# 			d[graph.name] = {
+# 				'datarows': datarows
+# 			}
+#
+# 		opts =
+# 		return HttpResponse(json.dumps(opts), content_type='application/json')
 
 
 class GraphDataView(DetailView):
@@ -101,5 +102,7 @@ class GraphDataView(DetailView):
 		return Graph.objects.filter(node=self.node, name=self.kwargs['name'])
 
 	def render_to_response(self, context, **response_kwargs):
-		data = FlotGraphDataGenerator().generate(self.node, self.object)
-		return HttpResponse(json.dumps(data), content_type='application/json')
+		return JsonResponse({
+			'options': FlotGraphOptsGenerator().generate(self.node, self.get_queryset().get()),
+			'datarows': FlotGraphDataGenerator().generate(self.node, self.object),
+		})

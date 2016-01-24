@@ -33,44 +33,39 @@ class GraphDataGenerator(object):
 
 class FlotGraphOptsGenerator(GraphOptsGenerator):
 
-	def generate(self, node, graphs):
-		def _gen():
-			for graph in graphs:
-				opts = {
-					'data_url': reverse('graph_data', args=(node.group, node.name, graph.name)),
-					'series': {
-						'lines': {
-							'show': True
-						},
-						'points': {
-							'show': False
-						}
-					},
-					'grid': {
-						'backgroundColor': {
-							'colors': [ "#fff", "#eee" ]
-						},
-						'borderWidth': {
-							'top': 1,
-							'right': 1,
-							'bottom': 2,
-							'left': 2
-						}
-					},
-					'xaxis': {
-						'mode': "time"
-					},
-					'yaxis': {}
+	def generate(self, node, graph):
+		opts = {
+			'series': {
+				'lines': {
+					'show': True
+				},
+				'points': {
+					'show': False
 				}
+			},
+			'grid': {
+				'backgroundColor': {
+					'colors': [ "#fff", "#eee" ]
+				},
+				'borderWidth': {
+					'top': 1,
+					'right': 1,
+					'bottom': 2,
+					'left': 2
+				}
+			},
+			'xaxis': {
+				'mode': "time"
+			},
+			'yaxis': {}
+		}
 
-				if graph.graph_args_lower_limit is not None:
-					opts['yaxis']['min'] = graph.graph_args_lower_limit
-				if graph.graph_args_upper_limit is not None:
-					opts['yaxis']['upper'] = graph.graph_args_upper_limit
+		if graph.graph_args_lower_limit is not None:
+			opts['yaxis']['min'] = graph.graph_args_lower_limit
+		if graph.graph_args_upper_limit is not None:
+			opts['yaxis']['upper'] = graph.graph_args_upper_limit
 
-				yield graph.name, opts
-
-		return OrderedDict(_gen())
+		return opts
 
 
 class FlotGraphDataGenerator(GraphDataGenerator):
@@ -99,10 +94,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 
 				yield flot_opts
 
-		return {
-			'graph_name': graph.name,
-			'datarows': list(_gen()),
-		}
+		return list(_gen())
 
 	def get_data(self, datarow, datafile, data_scope, invert, *args):
 		date_range = ""
