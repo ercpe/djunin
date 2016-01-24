@@ -35,7 +35,7 @@ class FlotGraphOptsGenerator(GraphOptsGenerator):
 	def generate(self, node, graphs):
 		def _gen():
 			for graph in graphs:
-				yield graph.name, {
+				opts = {
 					'data_url': reverse('graph_data', args=(node.group, node.name, graph.name)),
 					'series': {
 						'lines': {
@@ -59,7 +59,15 @@ class FlotGraphOptsGenerator(GraphOptsGenerator):
 					'xaxis': {
 						'mode': "time"
 					},
+					'yaxis': {}
 				}
+
+				if graph.graph_args_lower_limit is not None:
+					opts['yaxis']['min'] = graph.graph_args_lower_limit
+				if graph.graph_args_upper_limit is not None:
+					opts['yaxis']['upper'] = graph.graph_args_upper_limit
+
+				yield graph.name, opts
 
 		return OrderedDict(_gen())
 
@@ -76,7 +84,16 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			elif data_scope == SCOPE_MONTH:
 				date_range = "-s -756h"
 
-			for dr in graph.datarows.all():
+			datarows = None
+			if graph.graph_order:
+				db_datarows = list(graph.datarows.all())
+				datarows = []
+				for dr_name in graph.graph_order.split(' '):
+					datarows.append([x for x in db_datarows if x.name == dr_name][0])
+			else:
+				datarows = graph.datarows.order_by('name')
+
+			for dr in datarows:
 				(start, end, resolution), (no,), data = rrdtool.fetch([str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), 'AVERAGE', date_range])
 				logger.debug("%s/%s: from %s to %s every %s sec", graph.name, dr.name, datetime.datetime.fromtimestamp(start), datetime.datetime.fromtimestamp(end), resolution)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from djunin.models.muninobj import Node, Graph, DataRow, GraphOption, DataRowOption
+from djunin.models.muninobj import Node, Graph, DataRow, DataRowOption
 
-__all__ = ['Node', 'Graph', 'DataRow', 'DataRowOption', 'GraphOption']
+__all__ = ['Node', 'Graph', 'DataRow', 'DataRowOption']

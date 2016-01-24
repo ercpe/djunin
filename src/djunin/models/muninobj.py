@@ -21,36 +21,34 @@ class Option(ModelBase):
 		abstract = True
 
 
-class GraphManager(MuninObjectManagerBase):
-
-	def get_queryset(self):
-		return super(GraphManager, self).get_queryset().prefetch_related('options')
-
-
 class Graph(ModelBase):
 	node = models.ForeignKey(Node, related_name='graphs')
 	name = models.CharField(max_length=250)
 
-	graph_category = models.CharField(max_length=250, null=True, blank=True)
-
 	parent = models.ForeignKey('Graph', related_name='subgraphs', null=True, blank=True)
 
-	objects = GraphManager()
+	graph_args = models.TextField(blank=True)
+	graph_args_base = models.IntegerField(null=True, blank=True)
+	graph_args_lower_limit = models.IntegerField(null=True, blank=True)
+	graph_args_upper_limit = models.IntegerField(null=True, blank=True)
+	graph_category = models.CharField(max_length=250, null=True, blank=True)
+	graph_info = models.TextField(blank=True)
+	graph_order = models.TextField(blank=True)
+	graph_period = models.CharField(max_length=150, blank=True)
+	graph_printf = models.CharField(max_length=150, blank=True)
+	graph_scale = models.NullBooleanField()
+	graph_title = models.CharField(max_length=200, blank=True)
+	graph_total = models.CharField(max_length=200, blank=True)
+	graph_vlabel = models.CharField(max_length=200, blank=True)
+	graph_width = models.IntegerField(null=True)
 
 	def __str__(self):
 		if self.parent:
 			return "%s/%s" % (self.parent, self.name)
-		return self.name
+		return self.graph_title or self.name
 
 	class Meta(ModelBase.Meta):
 		unique_together = 'node', 'name'
-
-
-class GraphOption(Option):
-	graph = models.ForeignKey(Graph, related_name='options')
-
-	class Meta(ModelBase.Meta):
-		unique_together = 'graph', 'key'
 
 
 class DataRow(ModelBase):
