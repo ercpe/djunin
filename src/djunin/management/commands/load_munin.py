@@ -52,6 +52,8 @@ class Command(BaseCommand):
 		# todo: fill opts with None to be able to remove options from the database
 		graph, graph_created = Graph.objects.update_or_create(node=n, name=g.name, defaults=opts)
 
+		datarow_field_names = [f.name for f in DataRow._meta.fields]
+
 		for dr_name, dr_values in g.datarows.items():
 			logger.debug("Creating datarow %s on %s/%s", dr_name, graph.parent, graph)
 
@@ -60,15 +62,15 @@ class Command(BaseCommand):
 				'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values)
 			}
 			dr_opts.update(dr_values)
-			if 'host_name' in dr_opts:
-				del dr_opts['host_name']
-
-			if 'extinfo' in dr_opts:
-				del dr_opts['extinfo']
 
 			if 'graph' in dr_opts:
 				dr_opts['do_graph'] = dr_opts['graph'].lower() == "yes"
 				del dr_opts['graph']
+
+			for k in dr_opts.keys():
+				if k not in datarow_field_names:
+					logger.info("Ignoring field '%s'", k)
+					del dr_opts[k]
 
 			DataRow.objects.update_or_create(graph=graph, name=dr_name, defaults=dr_opts)
 
