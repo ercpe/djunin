@@ -1,8 +1,7 @@
 {% extends "template.html" %}
 {% load staticfiles %}
 
-{% block styles %}
-	<script type="text/javascript" src="{% static 'jquery.min.js' %}"></script>
+{% block scripts %}
 	<script type="text/javascript" src="{% static 'flot/jquery.flot.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'flot/jquery.flot.time.js' %}"></script>
 	<script type="text/javascript" src="{% static 'flot/jquery.flot.stack.js' %}"></script>
@@ -30,5 +29,5 @@
 		{% endfor %}
 	{% endfor %}
 
-	<script type="text/javascript" src="{% static 'site.js' %}"></script>
+
 {% endblock %}

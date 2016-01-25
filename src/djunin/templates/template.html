@@ -56,26 +56,26 @@
 							<a href="{% url 'nodes' %}" title="{% trans 'Nodes' %}">{% trans 'Nodes' %}</a>
 							{% if nodes %}
 								{% regroup nodes by group as grouped_nodes %}
-								<ul>
+								<ul class="nav" role="menu">
 									{% for group in grouped_nodes %}
-										<li><a href="{% url 'group_nodes' group.grouper %}">{{group.grouper}}</a></li>
+										<li{% if selected_group == group.grouper %} class="active"{% endif %}><a href="{% url 'group_nodes' group.grouper %}">{{group.grouper}}</a></li>
 									{% endfor %}
 								</ul>
 							{% endif %}
 						</li>
-						<!--
-						<li><a href="#">Analytics</a></li>
-						<li><a href="#">Export</a></li>
-						-->
 					</ul>
 				</div>
 				<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 					<h1 class="page-header">{{page_title}}</h1>
 
 					{% block content %}{% endblock %}
-
 				</div>
 			</div>
 		</div>
+
+		<script type="text/javascript" src="{% static 'jquery.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'site.js' %}"></script>
+		{% block scripts %}{% endblock %}
 	</body>
 </html>

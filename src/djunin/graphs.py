@@ -93,9 +93,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			else:
 				datarows = graph_datarows
 
-			logger.debug("Sorted datarows: %s", [dr.name for dr in datarows])
-			logger.debug("Graph order:     %s", graph.graph_order)
-
 			for dr in datarows:
 				flot_opts = {
 					'label': dr.label or None,

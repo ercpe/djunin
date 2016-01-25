@@ -9,6 +9,10 @@ class Node(ModelBase):
 	group = models.CharField(max_length=250)
 	name = models.CharField(max_length=250)
 
+	@property
+	def graph_categories(self):
+		return self.graphs.values_list('graph_category', flat=True).order_by('graph_category').distinct()
+
 	class Meta(ModelBase.Meta):
 		unique_together = 'group', 'name'
 

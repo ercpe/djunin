@@ -6,7 +6,16 @@
 		<h2>{{group.grouper}}</h2>
 		<ul>
 			{% for node in group.list %}
-				<li><a href="{% url 'graphs' node.group node.name %}" title="{{node}}">{{node}}</a></li>
+				<li>
+					<a href="{% url 'graphs' node.group node.name %}" title="{{node}}">{{node}}</a>
+					{% if node.graph_categories %}
+						[
+							{% for category in node.graph_categories %}
+								<a href="{% url 'graphs' node.group node.name %}#{{category}}" title="{{category}}">{{category}}</a>&nbsp;
+							{% endfor %}
+						]
+					{% endif %}
+				</li>
 			{% endfor %}
 		</ul>
 	{% endfor %}

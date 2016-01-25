@@ -32,6 +32,9 @@ class NodesListView(BaseViewMixin, ListView):
 
 		return nodes
 
+	def get_context_data(self, **kwargs):
+		kwargs.setdefault('selected_group', self.kwargs.get('group', None))
+		return super(NodesListView, self).get_context_data(**kwargs)
 
 class GraphsListView(NodesListView):
 	model = Graph
@@ -53,6 +56,7 @@ class GraphsListView(NodesListView):
 
 	def get_context_data(self, **kwargs):
 		kwargs.setdefault('node', self.node)
+		kwargs.setdefault('selected_group', self.node.group)
 		return super(GraphsListView, self).get_context_data(nodes=super(GraphsListView, self).get_queryset(), **kwargs)
 
 	def get_queryset(self):
