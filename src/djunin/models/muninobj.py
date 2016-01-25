@@ -9,9 +9,15 @@ class Node(ModelBase):
 	group = models.CharField(max_length=250)
 	name = models.CharField(max_length=250)
 
+	def __init__(self, *args, **kwargs):
+		super(Node, self).__init__(*args, **kwargs)
+		self._graph_categories = None
+
 	@property
 	def graph_categories(self):
-		return self.graphs.values_list('graph_category', flat=True).order_by('graph_category').distinct()
+		if self._graph_categories is None:
+			self._graph_categories = self.graphs.values_list('graph_category', flat=True).order_by('graph_category').distinct()
+		return self._graph_categories
 
 	class Meta(ModelBase.Meta):
 		unique_together = 'group', 'name'
@@ -27,7 +33,7 @@ class Graph(ModelBase):
 	graph_args_base = models.IntegerField(null=True, blank=True)
 	graph_args_lower_limit = models.IntegerField(null=True, blank=True)
 	graph_args_upper_limit = models.IntegerField(null=True, blank=True)
-	graph_category = models.CharField(max_length=250, null=True, blank=True)
+	graph_category = models.CharField(max_length=250)
 	graph_info = models.TextField(blank=True)
 	graph_order = models.TextField(blank=True)
 	graph_period = models.CharField(max_length=150, blank=True)

@@ -39,18 +39,15 @@ class Command(BaseCommand):
 					q.delete()
 
 	def _save_graph(self, n, g, parent=None):
-		category = g.options.get('graph_category', None)
-		if category:
-			category = category.lower()
-
 		opts = {
 			'parent': parent,
-			'graph_category': category,
 		}
 		opts.update(g.options)
 		opts.update(self.parse_graph_args(g.options.get('graph_args', '')))
+
 		if 'host_name' in opts:
 			del opts['host_name']
+		opts['graph_category'] = opts.get('graph_category', 'other').lower()
 
 		# todo: fill opts with None to be able to remove options from the database
 		graph, graph_created = Graph.objects.update_or_create(node=n, name=g.name, defaults=opts)
