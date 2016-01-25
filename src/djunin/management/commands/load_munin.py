@@ -63,6 +63,9 @@ class Command(BaseCommand):
 			if 'host_name' in dr_opts:
 				del dr_opts['host_name']
 
+			if 'extinfo' in dr_opts:
+				del dr_opts['extinfo']
+
 			if 'graph' in dr_opts:
 				dr_opts['do_graph'] = dr_opts['graph'].lower() == "yes"
 				del dr_opts['graph']
