@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+
+from djunin.models import Node
 from djunin.objects import MuninDataFile
 
 class BaseViewMixin(object):
@@ -15,10 +17,15 @@ class BaseViewMixin(object):
 			self._datafile = MuninDataFile()
 		return self._datafile
 
+	@property
+	def all_node_groups(self):
+		return Node.objects.values_list('group', flat=True).order_by('group').distinct()
+
 	def get_context_data(self, **kwargs):
 		d = kwargs
 		d.setdefault('page_title', self.get_page_title())
 		d.setdefault('sidebar_item', self.get_sidebar_item())
+		d.setdefault('node_groups', self.all_node_groups)
 		return super(BaseViewMixin, self).get_context_data(**d)
 
 	def get_page_title(self):

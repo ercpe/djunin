@@ -66,7 +66,7 @@ class GraphsListView(NodesListView):
 			order_by('graph_category', 'name')
 
 
-class GraphDataView(DetailView):
+class GraphDataView(BaseViewMixin, DetailView):
 	model = Graph
 	slug_url_kwarg = 'name'
 	slug_field = 'name'

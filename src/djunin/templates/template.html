@@ -54,14 +54,11 @@
 						<li{% if sidebar_item == "dashboard" %} class="active"{% endif %}><a href="{% url 'dashboard' %}" title="{% trans 'Dashboard' %}">{% trans 'Dashboard' %} <span class="sr-only">(current)</span></a></li>
 						<li{% if sidebar_item == "nodes" %} class="active"{% endif %}>
 							<a href="{% url 'nodes' %}" title="{% trans 'Nodes' %}">{% trans 'Nodes' %}</a>
-							{% if nodes %}
-								{% regroup nodes by group as grouped_nodes %}
-								<ul class="nav" role="menu">
-									{% for group in grouped_nodes %}
-										<li{% if selected_group == group.grouper %} class="active"{% endif %}><a href="{% url 'group_nodes' group.grouper %}">{{group.grouper}}</a></li>
-									{% endfor %}
-								</ul>
-							{% endif %}
+							<ul class="nav" role="menu">
+								{% for group in node_groups %}
+									<li{% if selected_group == group %} class="active"{% endif %}><a href="{% url 'group_nodes' group %}">{{group}}</a></li>
+								{% endfor %}
+							</ul>
 						</li>
 					</ul>
 				</div>
