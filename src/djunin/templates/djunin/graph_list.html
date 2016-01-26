@@ -20,7 +20,7 @@
 				<div class="col-md-5">
 					<div id="graph-{{graph.name}}-daily" class="djunin-graph" style="height: 240px" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}">
 					</div>
-					<div id="graph-{{graph.name}}-legend"></div>
+					<div id="graph-{{graph.name}}-legend" class="djunin-graph-legend"></div>
 				</div>
 				<div class="col-md-5 col-xs-hidden">
 					<div id="graph-{{graph.name}}-weekly" class="djunin-graph" style="height: 240px">
