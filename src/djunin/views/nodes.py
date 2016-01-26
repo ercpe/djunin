@@ -86,6 +86,7 @@ class GraphDataView(BaseViewMixin, DetailView):
 
 	def render_to_response(self, context, **response_kwargs):
 		return JsonResponse({
+			'graph_name': self.kwargs['name'],
 			'options': FlotGraphOptsGenerator().generate(self.node, self.get_queryset().get()),
 			'datarows': FlotGraphDataGenerator().generate(self.node, self.object),
 		})
