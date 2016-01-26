@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.http.response import HttpResponse, JsonResponse
+from django.core.urlresolvers import reverse
+from django.http.response import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
-from django.views.generic import View
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
@@ -36,6 +36,7 @@ class NodesListView(BaseViewMixin, ListView):
 		kwargs.setdefault('selected_group', self.kwargs.get('group', None))
 		return super(NodesListView, self).get_context_data(**kwargs)
 
+
 class GraphsListView(NodesListView):
 	model = Graph
 	context_object_name = 'graphs'
@@ -54,17 +55,29 @@ class GraphsListView(NodesListView):
 			self._node = get_object_or_404(Node.objects.filter(group=self.kwargs['group'], name=self.kwargs['node']))
 		return self._node
 
+	@property
+	def current_category(self):
+		return self.kwargs['graph_category']
+
 	def get_context_data(self, **kwargs):
 		kwargs.setdefault('node', self.node)
 		kwargs.setdefault('selected_group', self.node.group)
+		kwargs.setdefault('current_category', self.current_category)
 		return super(GraphsListView, self).get_context_data(nodes=super(GraphsListView, self).get_queryset(), **kwargs)
 
 	def get_queryset(self):
 		return super(ListView, self).get_queryset().\
-			filter(node=self.node, parent=None).\
+			filter(node=self.node, parent=None, graph_category=self.current_category).\
 			select_related('node').\
 			order_by('graph_category', 'name')
 
+	def get(self, request, *args, **kwargs):
+		if not self.kwargs.get('graph_category', None):
+			kw = self.kwargs
+			kw['graph_category'] = self.node.graph_categories[0]
+			return HttpResponseRedirect(reverse('graphs', kwargs=kw))
+
+		return super(GraphsListView, self).get(request, *args, **kwargs)
 
 class GraphDataView(BaseViewMixin, DetailView):
 	model = Graph

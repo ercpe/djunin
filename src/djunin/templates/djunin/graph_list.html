@@ -9,9 +9,24 @@
 
 {% block content %}
 
+	<div>
+		<label for="node-graph-category">Category</label>
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="node-graph-category">
+				{{current_category}} <span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu">
+				{% for category in node.graph_categories %}
+					<li><a href="{% url 'graphs' node.group node.name category %}">{{category}}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+
+
 	{% regroup graphs by graph_category as grouped_graphs %}
 	{% for group in grouped_graphs %}
-		<h2 id="{{group.grouper|default:"other"}}">{{group.grouper|default:"other"}}</h2>
+		<h2 id="{{group.grouper}}">{{group.grouper}}</h2>
 
 		{% for graph in group.list %}
 			<p class="text-muted">{{graph}}</p>
