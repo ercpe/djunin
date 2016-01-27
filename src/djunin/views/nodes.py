@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-import json
-
+import datetime
+import time
+import pytz
 from django.core.urlresolvers import reverse
 from django.http.response import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.utils.http import http_date
 from django.utils.translation import ugettext as _
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from djunin.graphs import FlotGraphOptsGenerator, FlotGraphDataGenerator
+from djunin.graphs import FlotGraphDataGenerator
 from djunin.models.muninobj import Node, Graph
 from djunin.views.base import BaseViewMixin
 import logging
@@ -99,8 +101,11 @@ class GraphDataView(BaseViewMixin, DetailView):
 		return Graph.objects.filter(node=self.node, name=self.kwargs['name'])
 
 	def render_to_response(self, context, **response_kwargs):
-		return JsonResponse({
-			'graph_name': self.kwargs['name'],
-			'options': FlotGraphOptsGenerator().generate(self.node, self.get_queryset().get()),
-			'datarows': FlotGraphDataGenerator().generate(self.node, self.object),
-		})
+		data, start, end, resolution = FlotGraphDataGenerator().generate(self.node, self.object)
+		response = JsonResponse(data)
+
+		if start and end and resolution:
+			response['Expires'] = http_date(time.mktime(datetime.datetime.fromtimestamp(end).replace(tzinfo=pytz.UTC).timetuple()) + resolution)
+			response['Last-Modified'] = http_date(end)
+
+		return response

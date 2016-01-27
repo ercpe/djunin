@@ -5,9 +5,7 @@ import logging
 
 import rrdtool
 
-import datetime
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db.models import Q
 
 logger = logging.getLogger(__file__)
@@ -19,21 +17,30 @@ SCOPE_YEAR = 4
 SCOPE_RANGE = 5
 
 
-class GraphOptsGenerator(object):
-
-	def generate(self, node, graphs):
-		raise NotImplementedError
-
-
 class GraphDataGenerator(object):
 
 	def generate(self, node, graph):
 		raise NotImplementedError
 
 
-class FlotGraphOptsGenerator(GraphOptsGenerator):
+class FlotGraphDataGenerator(GraphDataGenerator):
 
-	def generate(self, node, graph):
+	def __init__(self):
+		super(FlotGraphDataGenerator, self).__init__()
+		self._start = None
+		self._end = None
+		self._resolution = None
+
+	def generate(self, node, graph, data_scope=SCOPE_DAY):
+		d = {
+			'graph_name': graph.name,
+			'options': self.generate_graph_options(node, graph),
+			'datarows': list(self.generate_datarows(node, graph, data_scope)),
+		}
+
+		return d, self._start, self._end, self._resolution
+
+	def generate_graph_options(self, node, graph):
 		stack = any(((dr.draw or '') in ('STACK', 'AREASTACK') for dr in graph.datarows.all()))
 		opts = {
 			'series': {
@@ -75,37 +82,31 @@ class FlotGraphOptsGenerator(GraphOptsGenerator):
 
 		return opts
 
+	def generate_datarows(self, node, graph, data_scope):
+		invert_datarows = graph.datarows.filter(do_graph=True).exclude(negative='').values_list('negative', flat=True)
+		graph_datarows = graph.datarows.filter(Q(do_graph=True) | Q(do_graph=False, name__in=invert_datarows)).order_by('name')
 
-class FlotGraphDataGenerator(GraphDataGenerator):
+		if graph.graph_order:
+			db_datarows = list(graph_datarows)
+			datarows = OrderedDict()
+			for dr_name in graph.graph_order.split(' '):
+				if dr_name not in datarows:
+					try:
+						datarows[dr_name] = [x for x in db_datarows if x.name == dr_name][0]
+					except IndexError:
+						logger.info("Datarow '%s' not found in %s", dr_name, db_datarows)
+			datarows = datarows.values()
+		else:
+			datarows = graph_datarows
 
-	def generate(self, node, graph, data_scope=SCOPE_DAY):
-		def _gen():
-			invert_datarows = graph.datarows.filter(do_graph=True).exclude(negative='').values_list('negative', flat=True)
-			graph_datarows = graph.datarows.filter(Q(do_graph=True) | Q(do_graph=False, name__in=invert_datarows)).order_by('name')
+		for dr in datarows:
+			flot_opts = {
+				'label': dr.label or None,
+				'data': self.get_data(dr, str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), data_scope, dr.name in invert_datarows, 'AVERAGE'),
+				'color': "#" + dr.colour if dr.colour else None,
+			}
 
-			if graph.graph_order:
-				db_datarows = list(graph_datarows)
-				datarows = OrderedDict()
-				for dr_name in graph.graph_order.split(' '):
-					if dr_name not in datarows:
-						try:
-							datarows[dr_name] = [x for x in db_datarows if x.name == dr_name][0]
-						except IndexError:
-							logger.info("Datarow '%s' not found in %s", dr_name, db_datarows)
-				datarows = datarows.values()
-			else:
-				datarows = graph_datarows
-
-			for dr in datarows:
-				flot_opts = {
-					'label': dr.label or None,
-					'data': self.get_data(dr, str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), data_scope, dr.name in invert_datarows, 'AVERAGE'),
-					'color': "#" + dr.colour if dr.colour else None,
-				}
-
-				yield flot_opts
-
-		return list(_gen())
+			yield flot_opts
 
 	def get_data(self, datarow, datafile, data_scope, invert, *args):
 		date_range = ""
@@ -116,9 +117,9 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		elif data_scope == SCOPE_MONTH:
 			date_range = "-s -756h"
 
-		(start, end, resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
+		(self._start, self._end, self._resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
 		return zip(
-			(x * 1000 for x in xrange(start, end, resolution)),
+			(x * 1000 for x in xrange(self._start, self._end, self._resolution)),
 			self.apply_cdef(datarow, (x[0] for x in data), invert)
 		)
 
