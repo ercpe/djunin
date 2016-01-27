@@ -34,7 +34,7 @@ class GraphDataGenerator(object):
 class FlotGraphOptsGenerator(GraphOptsGenerator):
 
 	def generate(self, node, graph):
-		stack = any(((dr.draw or '') == 'STACK' for dr in graph.datarows.all()))
+		stack = any(((dr.draw or '') in ('STACK', 'AREASTACK') for dr in graph.datarows.all()))
 		opts = {
 			'series': {
 				'stack': stack,
