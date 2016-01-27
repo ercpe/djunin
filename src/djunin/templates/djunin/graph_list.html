@@ -7,8 +7,9 @@
 	<script type="text/javascript" src="{% static 'flot/jquery.flot.stack.js' %}"></script>
 {% endblock %}
 
-{% block content %}
+{% block title %}{{current_category}} :: {{block.super}}{% endblock %}
 
+{% block content %}
 	<div>
 		<label for="node-graph-category">Category</label>
 		<div class="btn-group">
@@ -24,26 +25,22 @@
 	</div>
 
 
-	{% regroup graphs by graph_category as grouped_graphs %}
-	{% for group in grouped_graphs %}
-		<h2 id="{{group.grouper}}">{{group.grouper}}</h2>
+	{% for graph in graphs %}
+		{% ifchanged %}<h2 id="{{graph.group}}">{{graph.group}}</h2>{% endifchanged %}
 
-		{% for graph in group.list %}
-			<p class="text-muted">{{graph}}</p>
+		<p class="text-muted">{{graph}}</p>
 
-			<div class="row">
-				<div class="col-md-5">
-					<div id="graph-{{graph.name}}-daily" class="djunin-graph" style="height: 240px" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}">
-					</div>
-					<div id="graph-{{graph.name}}-legend" class="djunin-graph-legend"></div>
+		<div class="row">
+			<div class="col-md-5">
+				<div id="graph-{{graph.name}}-daily" class="djunin-graph" style="height: 240px" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}">
 				</div>
-				<div class="col-md-5 col-xs-hidden">
-					<div id="graph-{{graph.name}}-weekly" class="djunin-graph" style="height: 240px">
-					</div>
+				<div id="graph-{{graph.name}}-legend" class="djunin-graph-legend"></div>
+			</div>
+			<div class="col-md-5 col-xs-hidden">
+				<div id="graph-{{graph.name}}-weekly" class="djunin-graph" style="height: 240px">
 				</div>
 			</div>
-		{% endfor %}
+		</div>
 	{% endfor %}
-
 
 {% endblock %}

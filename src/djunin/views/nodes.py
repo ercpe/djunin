@@ -79,6 +79,7 @@ class GraphsListView(NodesListView):
 
 		return super(GraphsListView, self).get(request, *args, **kwargs)
 
+
 class GraphDataView(BaseViewMixin, DetailView):
 	model = Graph
 	slug_url_kwarg = 'name'
