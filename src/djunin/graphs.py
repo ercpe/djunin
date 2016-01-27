@@ -88,7 +88,10 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				datarows = OrderedDict()
 				for dr_name in graph.graph_order.split(' '):
 					if dr_name not in datarows:
-						datarows[dr_name] = [x for x in db_datarows if x.name == dr_name][0]
+						try:
+							datarows[dr_name] = [x for x in db_datarows if x.name == dr_name][0]
+						except IndexError:
+							logger.info("Datarow '%s' not found in %s", dr_name, db_datarows)
 				datarows = datarows.values()
 			else:
 				datarows = graph_datarows
