@@ -49,6 +49,9 @@ class Command(BaseCommand):
 			del opts['host_name']
 		opts['graph_category'] = opts.get('graph_category', 'other').lower()
 
+		if 'graph_scale' in opts:
+			opts['graph_scale'] = opts.get('graph_scale').lower() == "yes"
+
 		# todo: fill opts with None to be able to remove options from the database
 		graph, graph_created = Graph.objects.update_or_create(node=n, name=g.name, defaults=opts)
 
@@ -59,13 +62,17 @@ class Command(BaseCommand):
 
 			# todo: fill opts with None to be able to remove options from the database
 			dr_opts = {
-				'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values)
+				'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values),
+				'graph_scale': True,
 			}
 			dr_opts.update(dr_values)
 
 			if 'graph' in dr_opts:
 				dr_opts['do_graph'] = dr_opts['graph'].lower() == "yes"
 				del dr_opts['graph']
+
+			if 'graph_scale' in dr_opts and not isinstance(dr_opts['graph_scale'], bool):
+				dr_opts['graph_scale'] = dr_opts.get('graph_scale').lower() == "yes"
 
 			for k in dr_opts.keys():
 				if k not in datarow_field_names:
