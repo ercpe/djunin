@@ -36,6 +36,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			'graph_name': graph.name,
 			'options': self.generate_graph_options(node, graph),
 			'datarows': list(self.generate_datarows(node, graph, data_scope)),
+			'_meta': self.get_meta_options(node, graph),
 		}
 
 		return d, self._start, self._end, self._resolution
@@ -107,6 +108,14 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			}
 
 			yield flot_opts
+
+	def get_meta_options(self, node, graph):
+		d = {
+			'autoscale': graph.graph_scale,
+			'base': graph.graph_args_base or None,
+		}
+
+		return d
 
 	def get_data(self, datarow, datafile, data_scope, invert, *args):
 		date_range = ""
