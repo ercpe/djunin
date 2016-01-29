@@ -11,7 +11,7 @@
 					{% if node.graph_categories %}
 						[
 							{% for category in node.graph_categories %}
-								<a href="{% url 'graphs' node.group node.name %}#{{category}}" title="{{category}}">{{category}}</a>&nbsp;
+								<a href="{% url 'graphs' node.group node.name category %}" title="{{category}}">{{category}}</a>&nbsp;
 							{% endfor %}
 						]
 					{% endif %}
