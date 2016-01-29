@@ -16,7 +16,7 @@ class Node(ModelBase):
 	@property
 	def graph_categories(self):
 		if self._graph_categories is None:
-			self._graph_categories = self.graphs.values_list('graph_category', flat=True).order_by('graph_category').distinct()
+			self._graph_categories = self.graphs.filter(parent=None).values_list('graph_category', flat=True).order_by('graph_category').distinct()
 		return self._graph_categories
 
 	class Meta(ModelBase.Meta):
