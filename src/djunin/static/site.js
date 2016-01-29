@@ -4,11 +4,13 @@ $(document).ready(function () {
 		if (url) {
 			$.get(url, function(graph_data){
 				var opts = graph_data['options'];
+				var meta = graph_data['_meta'];
+
 				opts['legend'] = {
-					container: $('#graph-' + graph_data['graph_name'] + "-legend")
+					container: $('#graph-' + graph_data['graph_name'] + "-" + meta['scope'] + "-legend")
 				}
 
-				var meta = graph_data['_meta'];
+
 				if (meta['autoscale'] === true) {
 					var base = meta['base'] || 1000;
 					opts['yaxis']['tickFormatter'] = function suffixFormatter(val, axis) {

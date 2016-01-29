@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from djunin.graphs import FlotGraphDataGenerator
+from djunin.graphs import FlotGraphDataGenerator, SCOPE_DAY, SCOPE_WEEK
 from djunin.models.muninobj import Node, Graph
 from djunin.views.base import BaseViewMixin
 import logging
@@ -101,7 +101,9 @@ class GraphDataView(BaseViewMixin, DetailView):
 		return Graph.objects.filter(node=self.node, name=self.kwargs['name'])
 
 	def render_to_response(self, context, **response_kwargs):
-		data, start, end, resolution = FlotGraphDataGenerator().generate(self.node, self.object)
+		scope = self.kwargs.get('scope', '')
+
+		data, start, end, resolution = FlotGraphDataGenerator().generate(self.node, self.object, data_scope=scope)
 		response = JsonResponse(data)
 
 		if start and end and resolution:

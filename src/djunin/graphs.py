@@ -32,16 +32,24 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		self._resolution = None
 
 	def generate(self, node, graph, data_scope=SCOPE_DAY):
+		if data_scope == 'day':
+			scope = SCOPE_DAY
+		elif data_scope == 'week':
+			scope = SCOPE_WEEK
+		else:
+			raise ValueError("Unknown scope '%s'" % scope_s)
+
 		d = {
 			'graph_name': graph.name,
-			'options': self.generate_graph_options(node, graph),
-			'datarows': list(self.generate_datarows(node, graph, data_scope)),
-			'_meta': self.get_meta_options(node, graph),
+			'options': self.generate_graph_options(node, graph, scope),
+			'datarows': list(self.generate_datarows(node, graph, scope)),
+			'_meta': self.get_meta_options(node, graph, scope),
 		}
+		d['_meta']['scope'] = data_scope
 
 		return d, self._start, self._end, self._resolution
 
-	def generate_graph_options(self, node, graph):
+	def generate_graph_options(self, node, graph, scope):
 		stack = any(((dr.draw or '') in ('STACK', 'AREASTACK') for dr in graph.datarows.all()))
 		opts = {
 			'series': {
@@ -109,10 +117,11 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 
 			yield flot_opts
 
-	def get_meta_options(self, node, graph):
+	def get_meta_options(self, node, graph, data_scope):
 		d = {
 			'autoscale': graph.graph_scale,
 			'base': graph.graph_args_base or None,
+			'scope': data_scope,
 		}
 
 		return d
