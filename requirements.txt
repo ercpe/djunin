@@ -1,3 +1,6 @@
 # Project dependencies
 django
 django-opensearch
+django-bootstrap3
+pytz
+
