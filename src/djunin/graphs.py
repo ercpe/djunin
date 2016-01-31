@@ -58,13 +58,11 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 					'show': True,
 					'fill': stack,
 					'steps': stack,
+					'lineWidth': 1,
 				},
-				# 'bars': {
-				# 	'show': stack and False,
-				# 	'barWidth': 0,
-				# },
 				'points': {
-					'show': False
+					'show': False,
+					'lineWidth': 1,
 				}
 			},
 			'grid': {
