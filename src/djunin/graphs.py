@@ -50,14 +50,14 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		return d, self._start, self._end, self._resolution
 
 	def generate_graph_options(self, node, graph, scope):
-		stack = any(((dr.draw or '') in ('STACK', 'AREASTACK') for dr in graph.datarows.all()))
+		#stack = any(((dr.draw or '') in ('STACK', 'AREASTACK') for dr in graph.datarows.all()))
 		opts = {
 			'series': {
-				'stack': stack,
+		#		'stack': stack,
 				'lines': {
 					'show': True,
-					'fill': stack,
-					'steps': stack,
+		#			'fill': stack,
+		#			'steps': stack,
 					'lineWidth': 1,
 				},
 				'points': {
@@ -118,12 +118,14 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				'data': self.get_data(dr, str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), data_scope, dr.name in invert_datarows, 'AVERAGE'),
 				'color': "#" + dr.colour if dr.colour else None,
 			}
-			if dr.draw and dr.draw == 'AREA':
+			if dr.draw and dr.draw in ('AREA', 'STACK'):
 				flot_opts['lines'] = {
 					'show': True,
 					'fill': True,
 					'steps': True,
-				},
+				}
+				if dr.draw == 'STACK':
+					flot_opts['stack'] = True
 
 			yield flot_opts
 
