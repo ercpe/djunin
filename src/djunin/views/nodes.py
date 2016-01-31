@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from djunin.graphs import FlotGraphDataGenerator, SCOPE_DAY, SCOPE_WEEK
+from djunin.graphs import FlotGraphDataGenerator
 from djunin.models.muninobj import Node, Graph
 from djunin.views.base import BaseViewMixin
 import logging

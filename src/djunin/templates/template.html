@@ -55,7 +55,18 @@
 							<a href="{% url 'nodes' %}" title="{% trans 'Nodes' %}">{% trans 'Nodes' %}</a>
 							<ul class="nav" role="menu">
 								{% for group in node_groups %}
-									<li{% if selected_group == group %} class="active"{% endif %}><a href="{% url 'group_nodes' group %}">{{group}}</a></li>
+									<li{% if selected_group == group %} class="active"{% endif %}>
+										<a href="{% url 'group_nodes' group %}">{{group}}</a>
+										{% if selected_group == group %}
+											<ul class="nav" role="menu">
+												{% for group_node in group_nodes %}
+													<li{% if node == group_node %} class="active"{% endif %}>
+														<a href="{% url 'graphs' group group_node %}">{{group_node}}</a>
+													</li>
+												{% endfor %}
+											</ul>
+										{% endif %}
+									</li>
 								{% endfor %}
 							</ul>
 						</li>
