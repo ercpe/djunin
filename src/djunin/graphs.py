@@ -120,6 +120,12 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				'data': self.get_data(dr, str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile)), data_scope, dr.name in invert_datarows, 'AVERAGE'),
 				'color': "#" + dr.colour if dr.colour else None,
 			}
+			if dr.draw and dr.draw == 'AREA':
+				flot_opts['lines'] = {
+					'show': True,
+					'fill': True,
+					'steps': True,
+				},
 
 			yield flot_opts
 
