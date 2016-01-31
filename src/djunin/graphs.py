@@ -37,7 +37,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		elif data_scope == 'week':
 			scope = SCOPE_WEEK
 		else:
-			raise ValueError("Unknown scope '%s'" % scope_s)
+			raise ValueError("Unknown scope '%s'" % data_scope)
 
 		d = {
 			'graph_name': graph.name,
@@ -79,15 +79,21 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				}
 			},
 			'xaxis': {
-				'mode': "time"
+				'mode': "time",
 			},
-			'yaxis': {}
+			'yaxis': {
+				'axisLabelFontSizePixels': 12,
+				'axisLabelColour': 'rgb(84, 84, 84)'
+			}
 		}
 
 		if graph.graph_args_lower_limit is not None:
 			opts['yaxis']['min'] = graph.graph_args_lower_limit
 		if graph.graph_args_upper_limit is not None:
 			opts['yaxis']['max'] = graph.graph_args_upper_limit
+
+		if graph.graph_vlabel:
+			opts['yaxis']['axisLabel'] = graph.graph_vlabel.replace('${graph_period}', graph.graph_period or 'second')
 
 		return opts
 
