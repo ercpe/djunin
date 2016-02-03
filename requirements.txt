@@ -3,4 +3,4 @@ django
 django-opensearch
 django-bootstrap3
 pytz
-
+-e git://code.not-your-server.de/pyrpn.git#egg=pyrpn
