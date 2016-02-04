@@ -129,3 +129,8 @@ html { overflow-y: scroll; }
 .sidebar li.active > a:first-child { background-color: #eee; }
 
 .djunin-graph-legend { margin-bottom: 30px; }
+
+@media (max-width: 768px) {
+	.main h1.page-header { font-size: 26px; }
+}
+
