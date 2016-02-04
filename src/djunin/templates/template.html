@@ -65,7 +65,7 @@
 											<ul class="nav" role="menu">
 												{% for group_node in group_nodes %}
 													<li{% if node == group_node %} class="active"{% endif %}>
-														<a href="{% url 'graphs' group group_node %}">{{group_node}}</a>
+														<a class="nav-group-node" href="{% url 'graphs' group group_node %}">{{group_node}}</a>
 													</li>
 												{% endfor %}
 											</ul>
