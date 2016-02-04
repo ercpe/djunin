@@ -24,6 +24,6 @@ urlpatterns = [
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.js$', GraphDataView.as_view(), name='graph_data'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),
-	url(r'^nodes$', NodesListView.as_view(), name='nodes'),
+	url(r'^nodes/?$', NodesListView.as_view(), name='nodes'),
 	url(r'^$', DashboardView.as_view(), name='dashboard'),
 ]
