@@ -31,7 +31,11 @@
 					{% if node %}
 						<a class="navbar-brand" href="{% url 'group_nodes' node.group %}">{{node.group}}</a>
 					{% else %}
-						<a class="navbar-brand" href="{% url 'nodes' %}">Nodes</a>
+						{% if nodes and selected_group %}
+							<a class="navbar-brand" href="{% url 'nodes' %}">Nodes</a>
+						{% else %}
+							<a class="navbar-brand" href="{% url 'dashboard' %}">Djunin</a>
+						{% endif %}
 					{% endif %}
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
