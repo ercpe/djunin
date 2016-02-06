@@ -49,6 +49,8 @@ $(document).ready(function () {
 					}
 				}
 				$.plot($(elem), graph_data['datarows'], opts);
+			}).fail(function() {
+				$(elem).html('<div class="alert alert-danger">There was a error fetching the data for this graph :(</div>');
 			});
 		}
 	});
