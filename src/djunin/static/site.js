@@ -25,6 +25,15 @@ function suffixFormatter(base, val, axis) {
 	return val;
 }
 
+function align_legend(plot, offset) {
+	$.each(plot.getYAxes(), function(idx, elem) {
+		if (elem.labelWidth) {
+			$('.djunin-graph-legend', $(plot.getCanvas().parentElement).parent()).css('margin-left', (elem.labelWidth + 5) + 'px');
+			return false;
+		}
+	});
+}
+
 $(document).ready(function () {
 	$('.djunin-graph:visible').each(function(i, elem) {
 		var url = $(elem).data('url');
@@ -43,6 +52,11 @@ $(document).ready(function () {
 						return suffixFormatter(base, val, axis);
 					}
 				}
+
+				opts['hooks'] = {
+					processOffset: align_legend
+				}
+
 				$.plot($(elem), graph_data['datarows'], opts);
 			}).fail(function() {
 				$(elem).html('<div class="alert alert-danger">There was a error fetching the data for this graph :(</div>');
