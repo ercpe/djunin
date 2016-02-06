@@ -4,8 +4,6 @@ function suffixFormatter(base, val, axis) {
 	var absval = Math.abs(val);
 	var units = ['k', 'M', 'G', 'T', 'P']
 
-	console.log("Raw value: " + val);
-
 	for (var i=0; i < units.length; i++) {
 		var x = Math.pow(base, i+1);
 
@@ -14,10 +12,7 @@ function suffixFormatter(base, val, axis) {
 			if (i > 0) suffix = units[i-1]
 
 			var xcalc = val / Math.pow(base, i);
-			console.log("xcalc: " + xcalc, ", mod 10: " + xcalc % 10);
 			if (val < 0) xcalc * -1;
-
-			console.log("------, " + xcalc.toFixed(axis.tickDecimals) + " " + suffix);
 
 			var decimals = axis.tickDecimals;
 			if ((xcalc === Number(xcalc) && xcalc % 1 !== 0) && axis.tickDecimals == 0) {
