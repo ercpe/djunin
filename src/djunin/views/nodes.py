@@ -101,13 +101,17 @@ class GraphDataView(BaseViewMixin, DetailView):
 		return Graph.objects.filter(node=self.node, name=self.kwargs['name'])
 
 	def render_to_response(self, context, **response_kwargs):
-		scope = self.kwargs.get('scope', '')
+		try:
+			scope_name = self.kwargs.get('scope', '')
 
-		data, start, end, resolution = FlotGraphDataGenerator().generate(self.node, self.object, data_scope=scope)
-		response = JsonResponse(data)
+			data, start, end, resolution = FlotGraphDataGenerator(data_scope=scope_name).generate(self.node, self.object)
+			response = JsonResponse(data)
 
-		if start and end and resolution:
-			response['Expires'] = http_date(time.mktime(datetime.datetime.fromtimestamp(end).replace(tzinfo=pytz.UTC).timetuple()) + resolution)
-			response['Last-Modified'] = http_date(end)
+			if start and end and resolution:
+				response['Expires'] = http_date(time.mktime(datetime.datetime.fromtimestamp(end).replace(tzinfo=pytz.UTC).timetuple()) + resolution)
+				response['Last-Modified'] = http_date(end)
 
-		return response
+			return response
+		except:
+			logger.exception("Error rendering graph data for %s on %s", self.object, self.node)
+			raise
