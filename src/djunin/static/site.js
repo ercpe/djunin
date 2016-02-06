@@ -1,3 +1,35 @@
+function suffixFormatter(base, val, axis) {
+	if (val == 0) return val;
+
+	var absval = Math.abs(val);
+	var units = ['k', 'M', 'G', 'T', 'P']
+
+	console.log("Raw value: " + val);
+
+	for (var i=0; i < units.length; i++) {
+		var x = Math.pow(base, i+1);
+
+		if (absval < x) {
+			var suffix = "";
+			if (i > 0) suffix = units[i-1]
+
+			var xcalc = val / Math.pow(base, i);
+			console.log("xcalc: " + xcalc, ", mod 10: " + xcalc % 10);
+			if (val < 0) xcalc * -1;
+
+			console.log("------, " + xcalc.toFixed(axis.tickDecimals) + " " + suffix);
+
+			var decimals = axis.tickDecimals;
+			if ((xcalc === Number(xcalc) && xcalc % 1 !== 0) && axis.tickDecimals == 0) {
+				decimals = 1;
+			}
+
+			return xcalc.toFixed(decimals) + " " + suffix;
+		}
+	}
+	return val;
+}
+
 $(document).ready(function () {
 	$('.djunin-graph:visible').each(function(i, elem) {
 		var url = $(elem).data('url');
@@ -10,33 +42,12 @@ $(document).ready(function () {
 					container: $('#graph-' + graph_data['graph_name'] + "-" + meta['scope'] + "-legend")
 				}
 
-
 				if (meta['autoscale'] === true) {
 					var base = meta['base'] || 1000;
-					opts['yaxis']['tickFormatter'] = function suffixFormatter(val, axis) {
-						if (val == 0) {
-							return val;
-						}
-
-						var absval = Math.abs(val);
-						var units = ['k', 'M', 'G', 'T', 'P']
-
-						for (var i=0; i < units.length; i++) {
-							var x = Math.pow(base, i+1);
-
-							if (absval < x) {
-								var suffix = "";
-								if (i > 0) suffix = units[i-1]
-
-								var xcalc = val / Math.pow(base, i)
-								if (val < 0) xcalc * -1;
-								return xcalc.toFixed(axis.tickDecimals) + " " + suffix;
-							}
-						}
-						return val;
+					opts['yaxis']['tickFormatter'] = function(val, axis) {
+						return suffixFormatter(base, val, axis);
 					}
 				}
-
 				$.plot($(elem), graph_data['datarows'], opts);
 			});
 		}
