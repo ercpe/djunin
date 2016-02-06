@@ -110,6 +110,7 @@ class GraphDataView(BaseViewMixin, DetailView):
 			if start and end and resolution:
 				response['Expires'] = http_date(time.mktime(datetime.datetime.fromtimestamp(end).replace(tzinfo=pytz.UTC).timetuple()) + resolution)
 				response['Last-Modified'] = http_date(end)
+				response['Cache-Control'] = 'public'
 
 			return response
 		except:
