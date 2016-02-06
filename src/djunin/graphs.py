@@ -112,7 +112,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				flot_opts['lines'] = {
 					'show': True,
 					'fill': True,
-					'steps': True,
+					'steps': False,
 				}
 				flot_opts['stack'] = True
 
