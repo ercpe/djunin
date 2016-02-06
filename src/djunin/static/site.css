@@ -134,5 +134,7 @@ a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom:
 
 @media (max-width: 768px) {
 	.main h1.page-header { font-size: 26px; }
+
+	.main ul { padding-left: 20px; }
 }
 
