@@ -21,7 +21,7 @@ from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
-	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.js$', GraphDataView.as_view(), name='graph_data'),
+	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.json$', GraphDataView.as_view(), name='graph_data'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),
 	url(r'^nodes/?$', NodesListView.as_view(), name='nodes'),
