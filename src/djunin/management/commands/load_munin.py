@@ -63,7 +63,6 @@ class Command(BaseCommand):
 			# todo: fill opts with None to be able to remove options from the database
 			dr_opts = {
 				'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values),
-				'graph_scale': True,
 			}
 			dr_opts.update(dr_values)
 
