@@ -109,7 +109,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			# if it's an AREA, set it only to stack=True if there is at least another stackable data row
 			stack = dr.draw in ('AREASTACK', 'STACK') or \
 						(dr.draw == 'AREA' and self.datarows.exclude(pk=dr.pk).filter(draw__in=('AREASTACK', 'STACK')).exists())
-			logger.debug("%s/%s/%s: Fill: %s, Stack: %s", node, graph, dr, fill, stack)
 
 			flot_opts = {
 				'label': dr.label or None,

@@ -46,58 +46,77 @@ class MuninDataFile(object):
 	def parse(self, lines):
 		self._nodes = []
 
-		def _gen(lines):
-			for line in sorted(lines):
-				m = line_re.match(line)
+		d = {}
 
-				key = m.group('key')
-				key_chunks = key.split('.')
-				key = key_chunks[-1]
-				chunks_len = len(key_chunks)
-				datarow = key_chunks[-2] if chunks_len >= 2 else None
-				subgraph = key_chunks[-3] if chunks_len >= 3 else None
-				value = m.group('value')
+		for line in lines:
+			m = line_re.match(line)
 
-				yield (m.group('group_name'), m.group('node_name'), m.group('graph'), subgraph or None, datarow, key, value)
+			key = m.group('key')
+			key_chunks = key.split('.')
+			group_name, node_name, graph_name, value = m.group('group_name'), m.group('node_name'), m.group('graph'), m.group('value')
 
-		for group_name, group_lines in itertools.groupby(sorted(_gen(lines)), lambda item: item[0]):
-			group_lines = sorted([x[1:] for x in group_lines])
+			if group_name not in d:
+				d[group_name] = {}
 
-			for node_name, node_lines in itertools.groupby(group_lines, lambda item: item[0]):
-				node_lines = [x[1:] for x in node_lines]
+			if node_name not in d[group_name]:
+				d[group_name][node_name] = {}
 
-				graphs = []
+			if graph_name not in d[group_name][node_name]:
+				d[group_name][node_name][graph_name] = {
+					'options': {},
+					'datarows': {},
+					'subgraphs': {}
+				}
 
-				for graph_name, graph_lines in itertools.groupby(node_lines, lambda item: item[0]):
-					graph_lines = sorted([x[1:] for x in graph_lines])
+			if len(key_chunks) == 1:
+				assert key.startswith('graph_') or key == 'host_name', "Key should start with 'graph_': %s" % key
+				d[group_name][node_name][graph_name]['options'][key] = value
+			elif len(key_chunks) == 2:
+				a, b = key_chunks
 
-					graph = Graph(graph_name)
+				if b.startswith('graph_') and b != 'graph_data_size':
+					# this is a graph option for a subgraph
 
-					for subgraph_name, subgraph_lines in itertools.groupby(graph_lines, lambda item: item[0]):
-						subgraph_lines = sorted([x[1:] for x in subgraph_lines])
+					if a not in d[group_name][node_name][graph_name]['subgraphs']:
+						d[group_name][node_name][graph_name]['subgraphs'][a] = {
+							'options': {},
+							'datarows': {}
+						}
 
-						for datarow, key, value in subgraph_lines:
-							if subgraph_name:
-								if subgraph_name not in graph.subgraphs:
-									graph.subgraphs[subgraph_name] = Graph(subgraph_name)
+					d[group_name][node_name][graph_name]['subgraphs'][a]['options'][b] = value
+				else:
+					# this this is an option of a datarow of a parent graph
+					if a not in d[group_name][node_name][graph_name]['datarows']:
+						d[group_name][node_name][graph_name]['datarows'][a] = {}
+					d[group_name][node_name][graph_name]['datarows'][a][b]= value
 
-								if datarow:
-									if datarow not in graph.subgraphs[subgraph_name].datarows:
-										graph.subgraphs[subgraph_name].datarows[datarow] = {}
-									graph.subgraphs[subgraph_name].datarows[datarow][key] = value
-								else:
-									graph.subgraphs[subgraph_name].options[key] = value
-							else:
-								if datarow:
-									if datarow not in graph.datarows:
-										graph.datarows[datarow] = {}
-									graph.datarows[datarow][key] = value
-								else:
-									graph.options[key] = value
+			elif len(key_chunks) == 3:
+				subgraph, datarow, key = key_chunks
+				if subgraph not in d[group_name][node_name][graph_name]['subgraphs']:
+					d[group_name][node_name][graph_name]['subgraphs'] = {
+						subgraph: {
+							'options': {},
+							'datarows': {}
+						}
+					}
+				if datarow not in d[group_name][node_name][graph_name]['subgraphs'][subgraph]['datarows']:
+					d[group_name][node_name][graph_name]['subgraphs'][subgraph]['datarows'][datarow] = {}
+				d[group_name][node_name][graph_name]['subgraphs'][subgraph]['datarows'][datarow][key] = value
 
-					graphs.append(graph)
+		for group_name, nodes in d.items():
+			for node_name, graphs in nodes.items():
 
-				self._nodes.append(Node(group_name, node_name, graphs))
+				node_graphs = []
+
+				for graph_name, graph_data in graphs.items():
+					subgraphs = {}
+					for subgraph_name, subgraph_data in graph_data.get('subgraphs', {}).items():
+						subgraphs[subgraph_name] = Graph(subgraph_name, subgraph_data['options'], subgraph_data['datarows'])
+					g = Graph(graph_name, graph_data['options'], graph_data['datarows'], subgraphs)
+					node_graphs.append(g)
+
+				n = Node(group_name, node_name, graphs=node_graphs)
+				self._nodes.append(n)
 
 	@property
 	def nodes(self):
