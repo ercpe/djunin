@@ -103,8 +103,13 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		self.datarows = graph.datarows.all()
 
 		for dr in self.datarows.filter(Q(do_graph=True) | Q(name__in=invert_datarows_names)):
-			fill = dr.draw and dr.draw in ('AREASTACK', 'AREA', 'STACK')
-			stack = dr.draw and dr.draw in ('AREASTACK', 'STACK')
+			fill = bool(dr.draw and dr.draw in ('AREASTACK', 'AREA', 'STACK'))
+
+			# set stack to True if this is an AREASTACK oder STACK
+			# if it's an AREA, set it only to stack=True if there is at least another stackable data row
+			stack = dr.draw in ('AREASTACK', 'STACK') or \
+						(dr.draw == 'AREA' and self.datarows.exclude(pk=dr.pk).filter(draw__in=('AREASTACK', 'STACK')).exists())
+			logger.debug("%s/%s/%s: Fill: %s, Stack: %s", node, graph, dr, fill, stack)
 
 			flot_opts = {
 				'label': dr.label or None,
@@ -113,8 +118,8 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				'stack': stack,
 				'lines': {
 					'show': True,
-					'steps': False,
-					'fill': True, #1 if fill else 0,
+					'steps': False,  # make the graph less blurry
+					'fill': fill,
 				}
 			}
 
