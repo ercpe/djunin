@@ -47,6 +47,7 @@ class Command(BaseCommand):
 
 		if 'host_name' in opts:
 			del opts['host_name']
+
 		opts['graph_category'] = opts.get('graph_category', 'other').lower()
 
 		if 'graph_scale' in opts:
@@ -56,6 +57,9 @@ class Command(BaseCommand):
 		graph, graph_created = Graph.objects.update_or_create(node=n, name=g.name, defaults=opts)
 
 		datarow_field_names = [f.name for f in DataRow._meta.fields]
+		existing_datarow_names = graph.datarows.values_list('name', flat=True)
+
+		create_datarows = []
 
 		for dr_name, dr_values in g.datarows.items():
 			logger.debug("Creating datarow %s on %s/%s", dr_name, graph.parent, graph)
@@ -75,10 +79,15 @@ class Command(BaseCommand):
 
 			for k in dr_opts.keys():
 				if k not in datarow_field_names:
-					logger.info("Ignoring field '%s'", k)
+					logger.warning("Ignoring field '%s' on %s/%s/%s", k, n, g, dr_name)
 					del dr_opts[k]
 
-			DataRow.objects.update_or_create(graph=graph, name=dr_name, defaults=dr_opts)
+			if dr_name in existing_datarow_names:
+				DataRow.objects.filter(graph=graph, name=dr_name).update(**dr_opts)
+			else:
+				create_datarows.append(DataRow(graph=graph, name=dr_name, **dr_opts))
+
+		DataRow.objects.bulk_create(create_datarows)
 
 		if not graph_created:
 			DataRow.objects.filter(graph=graph).exclude(name__in=g.datarows.keys()).delete()
