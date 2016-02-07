@@ -39,6 +39,12 @@ $(document).ready(function () {
 		var url = $(elem).data('url');
 		if (url) {
 			$.get(url, function(graph_data){
+
+				if (graph_data['datarows'].length == 0) {
+					$(elem).html('<div class="alert alert-info">This graph has no data.</div>');
+					return;
+				}
+
 				var opts = graph_data['options'];
 				var meta = graph_data['_meta'];
 
