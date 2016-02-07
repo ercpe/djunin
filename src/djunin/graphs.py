@@ -103,18 +103,20 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		self.datarows = graph.datarows.all()
 
 		for dr in self.datarows.filter(Q(do_graph=True) | Q(name__in=invert_datarows_names)):
+			fill = dr.draw and dr.draw in ('AREASTACK', 'AREA', 'STACK')
+			stack = dr.draw and dr.draw in ('AREASTACK', 'STACK')
+
 			flot_opts = {
 				'label': dr.label or None,
 				'data': self.get_data(dr, dr.name in invert_datarows_names),
 				'color': "#" + dr.colour if dr.colour else None,
-			}
-			if dr.draw and dr.draw in ('AREA', 'STACK'):
-				flot_opts['lines'] = {
+				'stack': stack,
+				'lines': {
 					'show': True,
-					'fill': True,
 					'steps': False,
+					'fill': True, #1 if fill else 0,
 				}
-				flot_opts['stack'] = True
+			}
 
 			yield flot_opts
 
