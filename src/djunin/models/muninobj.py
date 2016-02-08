@@ -31,8 +31,8 @@ class Graph(ModelBase):
 
 	graph_args = models.TextField(blank=True)
 	graph_args_base = models.IntegerField(null=True, blank=True)
-	graph_args_lower_limit = models.IntegerField(null=True, blank=True)
-	graph_args_upper_limit = models.IntegerField(null=True, blank=True)
+	graph_args_lower_limit = models.BigIntegerField(null=True, blank=True)
+	graph_args_upper_limit = models.BigIntegerField(null=True, blank=True)
 	graph_category = models.CharField(max_length=250)
 	graph_info = models.TextField(blank=True)
 	graph_order = models.TextField(blank=True)
@@ -50,14 +50,14 @@ class Graph(ModelBase):
 		return self.graph_title or self.name
 
 	class Meta(ModelBase.Meta):
-		unique_together = 'node', 'name'
+		unique_together = 'node', 'parent', 'name'
 
 
 class DataRow(ModelBase):
 	graph = models.ForeignKey(Graph, related_name='datarows')
 	name = models.CharField(max_length=250, db_index=True)
 
-	rrdfile = models.CharField(unique=True, max_length=255)
+	rrdfile = models.CharField(max_length=255)
 
 	cdef = models.CharField(max_length=200, blank=True)
 	colour = models.CharField(max_length=7, blank=True)

@@ -5,6 +5,7 @@ import shlex
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.fields import NOT_PROVIDED, CharField, TextField
 
 from djunin.models import Node, Graph, DataRow
@@ -20,83 +21,160 @@ class Command(BaseCommand):
 		with transaction.atomic():
 			datafile = MuninDataFile()
 
-			for munin_node in datafile.nodes:
-				logger.info("Updating node %s", munin_node)
-				node, node_created = Node.objects.get_or_create(group=munin_node.group, name=munin_node.name)
+			self._process_nodes(datafile)
 
-				for munin_graph in munin_node.graphs:
-					graph, graph_created = self._save_graph(node, munin_graph)
+			self._process_graphs(datafile)
 
-					if munin_graph.subgraphs:
-						for munin_subgraph in munin_graph.subgraphs.values():
-							self._save_graph(node, munin_subgraph, parent=graph)
+			self._process_datarows(datafile)
 
-						if not graph_created:
-							q = Graph.objects.filter(node=node, parent=graph).exclude(name__in=[sg.name for sg in munin_graph.subgraphs.values()])
-							q.delete()
+	def _process_nodes(self, datafile):
+		logger.info("Processing nodes")
+		logger.info("Creating nodes")
+		# first, create missing nodes
+		existing_nodes = Node.objects.values_list('group', 'name')
+		Node.objects.bulk_create((
+			Node(group=n.group, name=n.name) for n in datafile.nodes if (n.group, n.name) not in existing_nodes
+		))
 
-				if not node_created:
-					q = Graph.objects.filter(node=node, parent=None).exclude(name__in=[g.name for g in munin_node.graphs])
-					q.delete()
-
-				logger.info("------------------------------------")
-
-	def _save_graph(self, node, munin_graph, parent=None):
-		logger.debug("Updating graph %s on %s", munin_graph, node)
-		# Set None as default value for all graph options to reset them if they aren't set in munins datafile
-		opts = self._get_model_attributes(Graph, lambda f: not f.name.startswith('graph_'))
-		opts['parent'] = parent
-		opts.update(munin_graph.options)
-		opts.update(self.parse_graph_args(munin_graph.options.get('graph_args', '')))
-
-		if 'host_name' in opts:
-			del opts['host_name']
-
-		opts['graph_category'] = (opts.get('graph_category', 'other') or 'other').lower()
-		if not isinstance(opts['graph_scale'], bool):
-			opts['graph_scale'] = opts.get('graph_scale', 'yes').lower() == "yes"
-
-		graph, graph_created = Graph.objects.update_or_create(node=node, name=munin_graph.name, defaults=opts)
-
-		datarow_field_names = [f.name for f in DataRow._meta.fields]
-		existing_datarow_names = graph.datarows.values_list('name', flat=True)
-		existing_datarows = graph.datarows.all()
-
-		create_datarows = []
-		update_datarows = []
-
-		for dr_name, dr_values in munin_graph.datarows.items():
-			logger.debug("Saving datarow %s on %s/%s", dr_name, graph.parent, graph)
-
-			dr_opts = self._get_model_attributes(DataRow, lambda f: f.name in ('graph', 'name', 'rrdfile'))
-			dr_opts['rrdfile'] = self.get_rrdfilename(graph, dr_name, dr_values)
-			dr_opts.update(dr_values)
-
-			if 'graph' in dr_opts:
-				dr_opts['do_graph'] = dr_opts['graph'].lower() == "yes"
-				del dr_opts['graph']
-
-			for k in dr_opts.keys():
-				if k not in datarow_field_names:
-					logger.warning("Ignoring field '%s' on %s/%s/%s", k, node, munin_graph, dr_name)
-					del dr_opts[k]
-
-			if dr_name in existing_datarow_names:
-				dr = [x for x in existing_datarows if x.name == dr_name][0]
-				for k, v in dr_opts.items():
-					setattr(dr, k, v)
-				update_datarows.append(dr)
+		logger.info("Removing nodes")
+		# then remove all other nodes
+		q_filter = None
+		for g, n in existing_nodes:
+			f = Q(group=g, name=n)
+			if q_filter is None:
+				q_filter = f
 			else:
-				create_datarows.append(DataRow(graph=graph, name=dr_name, **dr_opts))
+				q_filter = q_filter | f
+		Node.objects.exclude(q_filter).delete()
 
-		# bulk create new datarows
-		DataRow.objects.bulk_create(create_datarows)
-		# bulk update datarows
-		bulk_update(update_datarows)
-		# delete other datarows
-		DataRow.objects.filter(graph=graph).exclude(name__in=munin_graph.datarows.keys()).exclude(name__in=(dr.name for dr in create_datarows)).delete()
+	def _process_graphs(self, datafile):
+		logger.info("Processing graphs")
 
-		return graph, graph_created
+		existing_nodes = Node.objects.all()
+
+		logger.info("Creating root graphs")
+		existing_parent_graphs = Graph.objects.filter(parent=None).values_list('node__group', 'node__name', 'name')
+		Graph.objects.bulk_create((
+			Graph(node=[n for n in existing_nodes if n.group == group_name and n.name == node_name][0], name=graph_name)
+			for group_name, nodes in datafile.raw.items()
+			for node_name, graphs in nodes.items()
+			for graph_name, graph_data in graphs.items()
+			if (group_name, node_name, graph_name) not in existing_parent_graphs
+		))
+
+		logger.info("Creating subgraphs")
+		parent_graphs = Graph.objects.filter(parent=None).select_related('node')
+		existing_subgraphs = Graph.objects.exclude(parent=None).values_list('node__group', 'node__name', 'parent__name', 'name')
+		Graph.objects.bulk_create((
+			Graph(
+				node=[n for n in existing_nodes if n.group == group_name and n.name == node_name][0],
+				parent=[p for p in parent_graphs if p.node.group == group_name and p.node.name == node_name and p.name == graph_name][0],
+				name=subgraph_name)
+			for group_name, nodes in datafile.raw.items()
+			for node_name, graphs in nodes.items()
+			for graph_name, graph_data in graphs.items()
+			for subgraph_name, subgraph_data in graph_data.get('subgraphs', {}).items()
+			if (group_name, node_name, graph_name, subgraph_name) not in existing_subgraphs
+		))
+
+		logger.info("Updating all graphs")
+		all_graphs = Graph.objects.select_related('node', 'parent')
+		for graph in all_graphs:
+			if graph.parent:
+				graph_options = datafile.raw[graph.node.group][graph.node.name][graph.parent.name]['subgraphs'][graph.name]['options']
+			else:
+				graph_options = datafile.raw[graph.node.group][graph.node.name][graph.name]['options']
+
+			opts = self._get_model_attributes(Graph, lambda f: not f.name.startswith('graph_'))
+			opts.update(graph_options)
+			opts.update(self.parse_graph_args(graph_options.get('graph_args', '')))
+
+			if 'host_name' in opts:
+				del opts['host_name']
+
+			opts['graph_category'] = (opts.get('graph_category', 'other') or 'other').lower()
+			if not isinstance(opts['graph_scale'], bool):
+				opts['graph_scale'] = opts.get('graph_scale', 'yes').lower() == "yes"
+
+			for k, v in opts.items():
+				setattr(graph, k, v)
+
+		bulk_update(all_graphs)
+
+		logger.info("Deleting graphs")
+		q_filter = None
+		for g, n, p, name in all_graphs.values_list('node__group', 'node__name', 'parent__id', 'name'):
+			f = Q(node__group=g, node__name=n, parent__id=p, name=name)
+			if q_filter is None:
+				q_filter = f
+			else:
+				q_filter = q_filter | f
+		Graph.objects.exclude(q_filter).delete()
+
+	def _process_datarows(self, datafile):
+		logger.info("Processing datarows")
+
+		logger.info("... for root graphs")
+		parent_graphs = Graph.objects.filter(parent=None).select_related('node')
+		existing_parent_graph_datarows = DataRow.objects.filter(graph__in=parent_graphs).values_list('graph__node__group', 'graph__node__name', 'graph__name', 'name')
+		DataRow.objects.bulk_create((
+			DataRow(
+				graph=[p for p in parent_graphs if p.node.group == group_name and p.node.name == node_name and p.name == graph_name][0],
+				name=datarow_name
+			)
+			for group_name, nodes in datafile.raw.items()
+			for node_name, graphs in nodes.items()
+			for graph_name, graph_data in graphs.items()
+			for datarow_name, datarow_data in graphs.get('datarows', {}).items()
+			if (group_name, node_name, graph_name, datarow_name) not in existing_parent_graph_datarows
+		))
+
+		logger.info("... for subgraphs")
+		subgraphs = Graph.objects.exclude(parent=None).select_related('node', 'parent')
+		existing_subgraph_datarows = DataRow.objects.filter(graph__in=subgraphs).values_list('graph__node__group', 'graph__node__name', 'graph__parent__name', 'graph__name', 'name')
+		DataRow.objects.bulk_create((
+			DataRow(
+				graph=[sg for sg in subgraphs if sg.node.group == group_name and sg.node.name == node_name and sg.parent.name == graph_name and sg.name == subgraph_name][0],
+				name=datarow_name,
+			)
+			for group_name, nodes in datafile.raw.items()
+			for node_name, graphs in nodes.items()
+			for graph_name, graph_data in graphs.items()
+			for subgraph_name, subgraph_data in graph_data.get('subgraphs', {}).items()
+			for datarow_name, datarow_data in subgraph_data.get('datarows', {}).items()
+			if (group_name, node_name, graph_name, subgraph_name, datarow_name) not in existing_subgraph_datarows
+		))
+
+		logger.info("Updating all datarows")
+		all_datarows = DataRow.objects.select_related('graph', 'graph__parent', 'graph__node')
+		for datarow in all_datarows:
+			if datarow.graph.parent:
+				datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.parent.name]['subgraphs'][datarow.graph.name]['datarows'][datarow.name]
+			else:
+				datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.name]['datarows'][datarow.name]
+
+			opts = self._get_model_attributes(DataRow, lambda f: f.name in ('graph', 'name'))
+			opts['rrdfile'] = self.get_rrdfilename(datarow.graph, datarow.name, datarow_options)
+			opts.update(datarow_options)
+
+			if 'graph' in opts:
+				opts['do_graph'] = opts['graph'].lower() == "yes"
+				del opts['graph']
+
+			for k, v in opts.items():
+				setattr(datarow, k, v)
+
+		bulk_update(all_datarows)
+
+		logger.info("Removing datarows")
+		q_filter = None
+		for g, n, pid, gid, name in all_datarows.values_list('graph__node__group', 'graph__node__name', 'graph__parent__id', 'graph__id', 'name'):
+			f = Q(graph__node__group=g, graph__node__name=n, graph__parent__id=pid, graph__id=gid, name=name)
+			if q_filter is None:
+				q_filter = f
+			else:
+				q_filter = q_filter | f
+		DataRow.objects.exclude(q_filter).delete()
 
 	def _get_model_attributes(self, clazz, exclude=None):
 

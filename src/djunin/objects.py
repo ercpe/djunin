@@ -38,6 +38,7 @@ class Graph(object):
 class MuninDataFile(object):
 
 	def __init__(self):
+		self._raw = None
 		self._nodes = None
 
 		with open(os.path.join(settings.MUNIN_DATA_DIR, 'datafile'), 'r') as f:
@@ -103,6 +104,8 @@ class MuninDataFile(object):
 					d[group_name][node_name][graph_name]['subgraphs'][subgraph]['datarows'][datarow] = {}
 				d[group_name][node_name][graph_name]['subgraphs'][subgraph]['datarows'][datarow][key] = value
 
+		self._raw = d
+
 		for group_name, nodes in d.items():
 			for node_name, graphs in nodes.items():
 
@@ -121,3 +124,7 @@ class MuninDataFile(object):
 	@property
 	def nodes(self):
 		return sorted(self._nodes, key=lambda x: (x.group, x.name))
+
+	@property
+	def raw(self):
+		return self._raw
