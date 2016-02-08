@@ -5,9 +5,12 @@ import shlex
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models.fields import NOT_PROVIDED, CharField, TextField
 
 from djunin.models import Node, Graph, DataRow
 from djunin.objects import MuninDataFile
+
+from bulk_update.helper import bulk_update
 
 logger = logging.getLogger(__file__)
 
@@ -18,16 +21,14 @@ class Command(BaseCommand):
 			datafile = MuninDataFile()
 
 			for munin_node in datafile.nodes:
-				logger.info("Creating/Updating node %s", munin_node)
+				logger.info("Updating node %s", munin_node)
 				node, node_created = Node.objects.get_or_create(group=munin_node.group, name=munin_node.name)
 
 				for munin_graph in munin_node.graphs:
-					logger.debug("Creating/Updating graph %s on %s", munin_graph, munin_node)
 					graph, graph_created = self._save_graph(node, munin_graph)
 
 					if munin_graph.subgraphs:
 						for munin_subgraph in munin_graph.subgraphs.values():
-							logger.debug("Creating/Updating graph %s/%s on %s", munin_graph, munin_subgraph, munin_node)
 							self._save_graph(node, munin_subgraph, parent=graph)
 
 						if not graph_created:
@@ -38,61 +39,83 @@ class Command(BaseCommand):
 					q = Graph.objects.filter(node=node, parent=None).exclude(name__in=[g.name for g in munin_node.graphs])
 					q.delete()
 
-	def _save_graph(self, n, g, parent=None):
-		opts = {
-			'parent': parent,
-		}
-		opts.update(g.options)
-		opts.update(self.parse_graph_args(g.options.get('graph_args', '')))
+				logger.info("------------------------------------")
+
+	def _save_graph(self, node, munin_graph, parent=None):
+		logger.debug("Updating graph %s on %s", munin_graph, node)
+		# Set None as default value for all graph options to reset them if they aren't set in munins datafile
+		opts = self._get_model_attributes(Graph, lambda f: not f.name.startswith('graph_'))
+		opts['parent'] = parent
+		opts.update(munin_graph.options)
+		opts.update(self.parse_graph_args(munin_graph.options.get('graph_args', '')))
 
 		if 'host_name' in opts:
 			del opts['host_name']
 
-		opts['graph_category'] = opts.get('graph_category', 'other').lower()
+		opts['graph_category'] = (opts.get('graph_category', 'other') or 'other').lower()
+		if not isinstance(opts['graph_scale'], bool):
+			opts['graph_scale'] = opts.get('graph_scale', 'yes').lower() == "yes"
 
-		if 'graph_scale' in opts:
-			opts['graph_scale'] = opts.get('graph_scale').lower() == "yes"
-
-		# todo: fill opts with None to be able to remove options from the database
-		graph, graph_created = Graph.objects.update_or_create(node=n, name=g.name, defaults=opts)
+		graph, graph_created = Graph.objects.update_or_create(node=node, name=munin_graph.name, defaults=opts)
 
 		datarow_field_names = [f.name for f in DataRow._meta.fields]
 		existing_datarow_names = graph.datarows.values_list('name', flat=True)
+		existing_datarows = graph.datarows.all()
 
 		create_datarows = []
+		update_datarows = []
 
-		for dr_name, dr_values in g.datarows.items():
-			logger.debug("Creating datarow %s on %s/%s", dr_name, graph.parent, graph)
+		for dr_name, dr_values in munin_graph.datarows.items():
+			logger.debug("Saving datarow %s on %s/%s", dr_name, graph.parent, graph)
 
-			# todo: fill opts with None to be able to remove options from the database
-			dr_opts = {
-				'rrdfile': self.get_rrdfilename(graph, dr_name, dr_values),
-			}
+			dr_opts = self._get_model_attributes(DataRow, lambda f: f.name in ('graph', 'name', 'rrdfile'))
+			dr_opts['rrdfile'] = self.get_rrdfilename(graph, dr_name, dr_values)
 			dr_opts.update(dr_values)
 
 			if 'graph' in dr_opts:
 				dr_opts['do_graph'] = dr_opts['graph'].lower() == "yes"
 				del dr_opts['graph']
 
-			if 'graph_scale' in dr_opts and not isinstance(dr_opts['graph_scale'], bool):
-				dr_opts['graph_scale'] = dr_opts.get('graph_scale').lower() == "yes"
-
 			for k in dr_opts.keys():
 				if k not in datarow_field_names:
-					logger.warning("Ignoring field '%s' on %s/%s/%s", k, n, g, dr_name)
+					logger.warning("Ignoring field '%s' on %s/%s/%s", k, node, munin_graph, dr_name)
 					del dr_opts[k]
 
 			if dr_name in existing_datarow_names:
-				DataRow.objects.filter(graph=graph, name=dr_name).update(**dr_opts)
+				dr = [x for x in existing_datarows if x.name == dr_name][0]
+				for k, v in dr_opts.items():
+					setattr(dr, k, v)
+				update_datarows.append(dr)
 			else:
 				create_datarows.append(DataRow(graph=graph, name=dr_name, **dr_opts))
 
+		# bulk create new datarows
 		DataRow.objects.bulk_create(create_datarows)
-
-		if not graph_created:
-			DataRow.objects.filter(graph=graph).exclude(name__in=g.datarows.keys()).delete()
+		# bulk update datarows
+		bulk_update(update_datarows)
+		# delete other datarows
+		DataRow.objects.filter(graph=graph).exclude(name__in=munin_graph.datarows.keys()).exclude(name__in=(dr.name for dr in create_datarows)).delete()
 
 		return graph, graph_created
+
+	def _get_model_attributes(self, clazz, exclude=None):
+
+		def _gen():
+			for field in clazz._meta.fields:
+				if exclude and exclude(field):
+					continue
+
+				default_value = field.default
+
+				if default_value == NOT_PROVIDED:
+					if isinstance(field, (CharField, TextField)) and field.blank:
+						default_value = ''
+					else:
+						default_value = None
+
+				yield field.name, default_value
+
+		return dict(_gen())
 
 	def parse_graph_args(self, args_s):
 		if not (args_s or "").strip():

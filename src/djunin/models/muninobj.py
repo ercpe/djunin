@@ -6,8 +6,8 @@ class MuninObjectManagerBase(models.Manager):
 	pass
 
 class Node(ModelBase):
-	group = models.CharField(max_length=250)
-	name = models.CharField(max_length=250)
+	group = models.CharField(max_length=250, db_index=True)
+	name = models.CharField(max_length=250, db_index=True)
 
 	def __init__(self, *args, **kwargs):
 		super(Node, self).__init__(*args, **kwargs)
@@ -25,7 +25,7 @@ class Node(ModelBase):
 
 class Graph(ModelBase):
 	node = models.ForeignKey(Node, related_name='graphs')
-	name = models.CharField(max_length=250)
+	name = models.CharField(max_length=250, db_index=True)
 
 	parent = models.ForeignKey('Graph', related_name='subgraphs', null=True, blank=True)
 
@@ -36,7 +36,7 @@ class Graph(ModelBase):
 	graph_category = models.CharField(max_length=250)
 	graph_info = models.TextField(blank=True)
 	graph_order = models.TextField(blank=True)
-	graph_period = models.CharField(max_length=150, blank=True)
+	graph_period = models.CharField(max_length=150, blank=True, default='second')
 	graph_printf = models.CharField(max_length=150, blank=True)
 	graph_scale = models.BooleanField(default=True)
 	graph_title = models.CharField(max_length=200, blank=True)
