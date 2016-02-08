@@ -73,6 +73,7 @@ class DataRow(ModelBase):
 	type = models.CharField(max_length=200, blank=True)
 	update_rate = models.IntegerField(null=True, blank=True)
 	warning = models.CharField(max_length=100, blank=True)
+	extinfo = models.TextField(null=True, blank=True)
 
 	class Meta(ModelBase.Meta):
 		unique_together = 'graph', 'name'

@@ -117,7 +117,7 @@ class Command(BaseCommand):
 		logger.info("... for root graphs")
 		parent_graphs = Graph.objects.filter(parent=None).select_related('node')
 		existing_parent_graph_datarows = DataRow.objects.filter(graph__in=parent_graphs).values_list('graph__node__group', 'graph__node__name', 'graph__name', 'name')
-		DataRow.objects.bulk_create((
+		x = (
 			DataRow(
 				graph=[p for p in parent_graphs if p.node.group == group_name and p.node.name == node_name and p.name == graph_name][0],
 				name=datarow_name
@@ -125,9 +125,10 @@ class Command(BaseCommand):
 			for group_name, nodes in datafile.raw.items()
 			for node_name, graphs in nodes.items()
 			for graph_name, graph_data in graphs.items()
-			for datarow_name, datarow_data in graphs.get('datarows', {}).items()
+			for datarow_name, datarow_data in graph_data.get('datarows', {}).items()
 			if (group_name, node_name, graph_name, datarow_name) not in existing_parent_graph_datarows
-		))
+		)
+		DataRow.objects.bulk_create(x)
 
 		logger.info("... for subgraphs")
 		subgraphs = Graph.objects.exclude(parent=None).select_related('node', 'parent')
@@ -154,17 +155,20 @@ class Command(BaseCommand):
 				datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.name]['datarows'][datarow.name]
 
 			opts = self._get_model_attributes(DataRow, lambda f: f.name in ('graph', 'name'))
-			opts['rrdfile'] = self.get_rrdfilename(datarow.graph, datarow.name, datarow_options)
 			opts.update(datarow_options)
+			opts['rrdfile'] = self.get_rrdfilename(datarow.graph, datarow.name, datarow_options)
 
 			if 'graph' in opts:
 				opts['do_graph'] = opts['graph'].lower() == "yes"
 				del opts['graph']
 
-			for k, v in opts.items():
-				setattr(datarow, k, v)
+			#for k, v in opts.items():
+			#	setattr(datarow, k, v)
+			#datarow.save()
+			DataRow.objects.filter(pk=datarow.pk).update(**opts)
 
-		bulk_update(all_datarows)
+		#bulk_update(all_datarows)
+		#raise Exception()
 
 		logger.info("Removing datarows")
 		q_filter = None
@@ -177,10 +181,9 @@ class Command(BaseCommand):
 		DataRow.objects.exclude(q_filter).delete()
 
 	def _get_model_attributes(self, clazz, exclude=None):
-
 		def _gen():
 			for field in clazz._meta.fields:
-				if exclude and exclude(field):
+				if field.name == 'id' or (exclude and exclude(field)):
 					continue
 
 				default_value = field.default
