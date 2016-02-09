@@ -45,7 +45,9 @@ class Command(BaseCommand):
 				q_filter = f
 			else:
 				q_filter = q_filter | f
-		Node.objects.exclude(q_filter).delete()
+
+		if q_filter:
+			Node.objects.exclude(q_filter).delete()
 
 	def _process_graphs(self, datafile):
 		logger.info("Processing graphs")
@@ -109,7 +111,9 @@ class Command(BaseCommand):
 				q_filter = f
 			else:
 				q_filter = q_filter | f
-		Graph.objects.exclude(q_filter).delete()
+
+		if q_filter:
+			Graph.objects.exclude(q_filter).delete()
 
 	def _process_datarows(self, datafile):
 		logger.info("Processing datarows")
@@ -178,7 +182,9 @@ class Command(BaseCommand):
 				q_filter = f
 			else:
 				q_filter = q_filter | f
-		DataRow.objects.exclude(q_filter).delete()
+
+		if q_filter:
+			DataRow.objects.exclude(q_filter).delete()
 
 	def _get_model_attributes(self, clazz, exclude=None):
 		def _gen():
