@@ -149,10 +149,13 @@ class Command(BaseCommand):
 		logger.info("Updating all datarows")
 		all_datarows = DataRow.objects.select_related('graph', 'graph__parent', 'graph__node')
 		for datarow in all_datarows:
-			if datarow.graph.parent:
-				datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.parent.name]['subgraphs'][datarow.graph.name]['datarows'][datarow.name]
-			else:
-				datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.name]['datarows'][datarow.name]
+			try:
+				if datarow.graph.parent:
+					datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.parent.name]['subgraphs'][datarow.graph.name]['datarows'][datarow.name]
+				else:
+					datarow_options = datafile.raw[datarow.graph.node.group][datarow.graph.node.name][datarow.graph.name]['datarows'][datarow.name]
+			except KeyError:
+				logger.info("Missing datarow: %s", datarow.name)
 
 			opts = self._get_model_attributes(DataRow, lambda f: f.name in ('graph', 'name'))
 			opts.update(datarow_options)
