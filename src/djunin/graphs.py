@@ -165,7 +165,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 	def get_data(self, datarow, invert, *args):
 		def _build_data():
 			for k in self.raw_data:
-				value = self.raw_data[k][datarow.name]
+				value = self.raw_data[k].get(datarow.name, None)
 				if value is None:
 					yield k, value
 				else:
