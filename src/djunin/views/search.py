@@ -7,7 +7,7 @@ from django.http.response import JsonResponse
 from django.views.generic import View
 import logging
 
-from djunin.models import Node
+from djunin.models import Node, Graph
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,13 @@ class SearchView(View):
 				yield {
 					'value': node_name,
 					'data': reverse('graphs', args=(group_name, node_name, )),
+				}
+
+			# graph category
+			for group_name, node_name, graph_category in Graph.objects.filter(_make_filter('graph_category')).values_list('node__group', 'node__name', 'graph_category').distinct():
+				yield {
+					'value': "%s / %s" % (graph_category, node_name),
+					'data': reverse('graphs', args=(group_name, node_name, graph_category)),
 				}
 
 		d = {
