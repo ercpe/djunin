@@ -43,6 +43,9 @@
 						<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
 						<li><a href="{% url 'nodes' %}">Nodes</a></li>
 					</ul>
+					<form class="navbar-form navbar-right">
+						<input type="text" class="form-control" placeholder="Search..." accesskey="f" id="site-search" data-url="{% url 'search' %}">
+					</form>
 				</div>
 			</div>
 		</nav>
@@ -83,6 +86,7 @@
 
 		<script type="text/javascript" src="{% static 'jquery.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'jQuery-Autocomplete/jquery.autocomplete.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'site.js' %}"></script>
 		{% block scripts %}{% endblock %}
 	</body>

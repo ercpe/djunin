@@ -18,9 +18,11 @@ from django.contrib import admin
 
 from djunin.views.dashboard import DashboardView
 from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
+from djunin.views.search import SearchView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
+	url(r'^search$', SearchView.as_view(), name='search'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.json$', GraphDataView.as_view(), name='graph_data'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),

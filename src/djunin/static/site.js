@@ -69,4 +69,11 @@ $(document).ready(function () {
 			});
 		}
 	});
+
+	$('#site-search').autocomplete({
+		serviceUrl: $('#site-search').data('url'),
+		onSelect: function (suggestion) {
+			console.log('You selected: ' + suggestion.value + ', ' + suggestion.data);
+		}
+	});
 });
