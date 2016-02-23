@@ -45,6 +45,9 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		self._resolution = None
 		self.datarows = None
 		self._raw_data = None
+		self._rrdcached = getattr(settings, 'RRDCACHED', None)
+		self._flush_rrdcached_before_fetch = getattr(settings, 'FLUSH_BEFORE_FETCH', False)
+
 
 	def generate(self, node, graph, data_scope=SCOPE_DAY):
 		d = {
@@ -131,9 +134,17 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		return self._raw_data
 
 	def _read_data(self):
+
 		d = OrderedDict()
 		for dr in self.datarows:
 			datafile = str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile))
+
+			if self._flush_rrdcached_before_fetch and self._rrdcached:
+				try:
+					rrdtool.flushcached(['--daemon', self._rrdcached, datafile])
+				except:
+					logger.exception("Could not flushrrdcached at %s", self._rrdcached)
+
 			date_range = ""
 			if self.data_scope == SCOPE_DAY:
 				date_range = "-s -28h"
