@@ -1,4 +1,4 @@
-{% comment %}{% load opensearch_tags %}{% endcomment %}{% load staticfiles %}{% load i18n %}<!DOCTYPE html>
+{% comment %}{% load opensearch_tags %}{% endcomment %}{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -43,9 +43,15 @@
 						<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
 						<li><a href="{% url 'nodes' %}">Nodes</a></li>
 					</ul>
+					{% if user.is_superuser %}
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="{% url 'dashboard' %}">{% bootstrap_icon 'cog' %} Administration</a></li>
+						</ul>
+					{% endif %}
 					<form class="navbar-form navbar-right">
 						<input type="text" class="form-control" placeholder="Search..." accesskey="f" id="site-search" data-url="{% url 'search' %}" autocomplete="off" autocorrect="off" autocapitalize="off">
 					</form>
+
 				</div>
 			</div>
 		</nav>
