@@ -50,6 +50,7 @@ MIDDLEWARE_CLASSES = (
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django.middleware.security.SecurityMiddleware',
+	'djunin.middleware.LoginRequiredMiddleware',
 )
 
 ROOT_URLCONF = 'djunin.urls'
@@ -97,3 +98,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGIN_REDIRECT_URL='/'

@@ -1,0 +1,32 @@
+{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>{% block title %}{% if page_title %}{{page_title}} :: {% endif %}Inframonkey{% endblock %}</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+		<!-- Custom styles for this template -->
+		<link href="{% static 'site.css' %}" rel="stylesheet">
+	</head>
+
+	<body>
+		<div class="container-fluid login-form">
+			<h1 class="text-center">Djunin</h1>
+
+			<form action="" method="post" class="login-form">
+				{% csrf_token %}
+				{% bootstrap_form form %}
+
+				<button class="btn btn-primary" type="submit">{% trans "Login" %}</button>
+			</form>
+		</div>
+
+		<script type="text/javascript">
+			document.getElementById('id_username').focus();
+		</script>
+	</body>
+</html>
