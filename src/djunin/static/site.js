@@ -42,6 +42,7 @@ $(document).ready(function () {
 
 				if (graph_data['datarows'].length == 0) {
 					$(elem).html('<div class="alert alert-info">This graph has no data.</div>');
+					$(elem).css('height', 'auto');
 					return;
 				}
 
@@ -66,6 +67,7 @@ $(document).ready(function () {
 				$.plot($(elem), graph_data['datarows'], opts);
 			}).fail(function() {
 				$(elem).html('<div class="alert alert-danger">There was a error fetching the data for this graph :(</div>');
+				$(elem).css('height', 'auto');
 			});
 		}
 	});
