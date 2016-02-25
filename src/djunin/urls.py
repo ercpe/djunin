@@ -23,8 +23,8 @@ from djunin.views.search import SearchView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
-	url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
-	url(r'^accounts/logout/$', 'django.contrib.auth.views.logout'),
+	url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
+	url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='logout'),
 	url(r'^administration/$', AdminIndexView.as_view(), name='admin'),
 	url(r'^search$', SearchView.as_view(), name='search'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.json$', GraphDataView.as_view(), name='graph_data'),
