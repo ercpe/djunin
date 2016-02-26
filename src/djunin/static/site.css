@@ -144,6 +144,7 @@ html { overflow-y: scroll; }
 a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom: 7px !important; }
 
 .djunin-graph-legend { margin-bottom: 30px; }
+.datarow-current { text-align: right; }
 
 @media (max-width: 768px) {
 	.main h1.page-header { font-size: 26px; }
