@@ -82,10 +82,14 @@ class Command(BaseCommand):
 		logger.info("Updating all graphs")
 		all_graphs = Graph.objects.select_related('node', 'parent')
 		for graph in all_graphs:
-			if graph.parent:
-				graph_options = datafile.raw[graph.node.group][graph.node.name][graph.parent.name]['subgraphs'][graph.name]['options']
-			else:
-				graph_options = datafile.raw[graph.node.group][graph.node.name][graph.name]['options']
+			graph_options = {}
+			try:
+				if graph.parent:
+					graph_options = datafile.raw[graph.node.group][graph.node.name][graph.parent.name]['subgraphs'][graph.name]['options']
+				else:
+					graph_options = datafile.raw[graph.node.group][graph.node.name][graph.name]['options']
+			except KeyError:
+				logger.warning("No graph options found for %s", graph.name)
 
 			opts = self._get_model_attributes(Graph, lambda f: not f.name.startswith('graph_'))
 			opts.update(graph_options)
