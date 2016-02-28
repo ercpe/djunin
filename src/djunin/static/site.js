@@ -77,9 +77,9 @@ function draw_graphs() {
 
 			// custom stuff for our graphs
 			$('table', legend_container).css('width', '100%');
+			$('tr', legend_container).append('<td class="datarow-min col-md-2"></td><td class="datarow-max col-md-2"></td><td class="datarow-current col-md-2"></td>');
 			$('table', legend_container).prepend('<tr><th colspan="2"></th><th>Min</th><th>Max</th><th>Current</th></tr>');
 			$('.legendLabel', legend_container).addClass('col-md-6')
-			$('tr', legend_container).append('<td class="datarow-min col-md-2"></td><td class="datarow-max col-md-2"></td><td class="datarow-current col-md-2"></td>');
 
 
 			function update_legend() {
@@ -117,7 +117,9 @@ function draw_graphs() {
 						y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 					}
 
-					$('tr:nth-child(' + (i+2) + ') > .datarow-current', legend_container).text(series.yaxis.tickFormatter(y, series.yaxis));
+					var formatted_value = series.yaxis.tickFormatter(y, series.yaxis);
+					if (formatted_value == 0) formatted_value = 0;
+					$('tr:nth-child(' + (i+2) + ') > .datarow-current', legend_container).text(formatted_value);
 				}
 			}
 
