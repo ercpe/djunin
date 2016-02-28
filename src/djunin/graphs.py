@@ -113,17 +113,26 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			stack = dr.draw in ('AREASTACK', 'STACK') or \
 						(dr.draw == 'AREA' and self.datarows.exclude(pk=dr.pk).filter(draw__in=('AREASTACK', 'STACK')).exists())
 
+			data, min_value, max_value = self.get_boundaries(self.get_data(dr, dr.name in invert_datarows_names))
+
 			flot_opts = {
 				'label': dr.label or None,
-				'data': self.get_data(dr, dr.name in invert_datarows_names),
 				'color': "#" + dr.colour if dr.colour else None,
 				'stack': stack,
 				'lines': {
 					'show': True,
 					'steps': False,  # make the graph less blurry
 					'fill': fill,
-				}
+				},
+				'internal_name': dr.name,
+				'description': dr.info,
+				'long_description': dr.extinfo
 			}
+			flot_opts.update({
+				'min_value': min_value,
+				'max_value': max_value,
+				'data': data
+			})
 
 			yield flot_opts
 
@@ -186,3 +195,18 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 					yield k, round(value * (-1 if invert else 1), 5)
 
 		return list(_build_data())
+
+	def get_boundaries(self, iterable):
+		min_value = None
+		max_value = None
+
+		for _, value in iterable:
+			if value is None:
+				continue
+
+			if min_value is None or value < min_value:
+				min_value = value
+			if max_value is None or value > max_value:
+				max_value = value
+
+		return iterable, min_value, max_value

@@ -54,7 +54,16 @@ function draw_graphs() {
 				return;
 			}
 
-			opts['legend'] = { container: legend_container }
+			opts['legend'] = {
+				container: legend_container,
+				labelFormatter: function(label, series) {
+					return $('<span></span>', {
+						id: "label_" + series.internal_name,
+						text: label,
+						title: series.description || series.long_description,
+					}).prop('outerHTML');
+				}
+			}
 
 			if (meta['autoscale'] === true) {
 				var base = meta['base'] || 1000;
