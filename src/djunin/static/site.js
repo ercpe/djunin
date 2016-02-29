@@ -58,7 +58,7 @@ function draw_graphs() {
 				container: legend_container,
 				labelFormatter: function(label, series) {
 					return $('<span></span>', {
-						id: "label_" + series.internal_name,
+						class: "label_" + series.internal_name,
 						text: label,
 						title: series.description || series.long_description,
 					}).prop('outerHTML');
@@ -87,7 +87,7 @@ function draw_graphs() {
 			// custom stuff for our graphs
 			$('table', legend_container).css('width', '100%');
 			$('tr', legend_container).append('<td class="datarow-min col-md-2"></td><td class="datarow-max col-md-2"></td><td class="datarow-current col-md-2"></td>');
-			$('table', legend_container).prepend('<tr><th colspan="2"></th><th>Min</th><th>Max</th><th>Current</th></tr>');
+			$('table', legend_container).prepend('<tr><th colspan="2"></th><th class="datarow-min">Min</th><th class="datarow-max">Max</th><th class="datarow-current">Current</th></tr>');
 			$('.legendLabel', legend_container).addClass('col-md-6')
 
 
