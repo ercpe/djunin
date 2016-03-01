@@ -6,7 +6,7 @@
 
 			var data = plot.getData();
 			for (var i = 0; i < data.length; i++) {
-				var row = $('.label_' + data[i].internal_name).parents('tr');
+				var row = $('.label_' + data[i].internal_name, legend).parents('tr');
 
 				$('.datarow-min', row).text(yaxis.tickFormatter(data[i].min_value, yaxis));
 				$('.datarow-max', row).text(yaxis.tickFormatter(data[i].max_value, yaxis));
