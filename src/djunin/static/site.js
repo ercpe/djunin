@@ -157,8 +157,12 @@ $(document).ready(function () {
 	$('#site-search').autocomplete({
 		serviceUrl: $('#site-search').data('url'),
 		onSelect: function (suggestion) {
+			console.log(suggestion);
 			window.location.href = suggestion.data;
 			return false;
 		}
+	});
+	$('#site-search').parents('form').on('submit', function() {
+		console.log("SUBMIT");
 	});
 });

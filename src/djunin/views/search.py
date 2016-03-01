@@ -3,13 +3,17 @@ import itertools
 
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
+from django.template.response import TemplateResponse
 from django.views.generic import View
 import logging
 
 from djunin.models import Node, Graph
 
 logger = logging.getLogger(__name__)
+
 
 class SearchView(View):
 
@@ -68,3 +72,31 @@ class SearchView(View):
 			'suggestions': list(itertools.chain(_search()))
 		}
 		return JsonResponse(d)
+
+
+class JumpToView(View):
+
+	def get(self, request):
+		q = (request.GET.get('query', '') or request.GET.get('q', '')).strip()
+		return self.handle(request, q)
+
+	def post(self, request):
+		q = (request.POST.get('query', '') or request.POST.get('q', '')).strip()
+		return self.handle(request, q)
+
+	def handle(self, request, q):
+		node_q = Node.objects.filter(name=q)
+		if node_q.count() == 1:
+			return HttpResponseRedirect(reverse('graphs', args=(node_q[0].group, node_q[0].name)))
+
+		node_q = Node.objects.filter(name__startswith=q)
+		if node_q.count() == 1:
+			return HttpResponseRedirect(reverse('graphs', args=(node_q[0].group, node_q[0].name)))
+
+		group_q = Node.objects.filter(group=q)
+		if group_q.exists():
+			return HttpResponseRedirect(reverse('group_nodes', args=(group_q[0].group, )))
+
+		response = render_to_response('not_found.html', {}, RequestContext(request))
+		response.status_code = 404
+		return response

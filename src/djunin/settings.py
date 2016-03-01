@@ -37,8 +37,9 @@ INSTALLED_APPS = (
 	'django.contrib.sessions',
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
+	'bootstrap3',
+	'opensearch',
 	'djunin',
-	'bootstrap3'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -100,3 +101,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/'
+
+OPENSEARCH_SHORT_NAME="Djunin"
+OPENSEARCH_SEARCH_URL="jump"

@@ -1,4 +1,4 @@
-{% comment %}{% load opensearch_tags %}{% endcomment %}{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}<!DOCTYPE html>
+{% load opensearch_tags %}{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -14,9 +14,7 @@
 		<link href="{% static 'site.css' %}" rel="stylesheet">
 		{% block styles %}{% endblock %}
 
-		{% comment %}
 		{% opensearch_meta %}
-		{% endcomment %}
 	</head>
 	<body>
 		<nav class="navbar navbar-inverse navbar-fixed-top">
@@ -49,8 +47,9 @@
 							<li><a href="{% url 'logout' %}">{% bootstrap_icon 'off' %} {% trans 'Logout' %}</a></li>
 						</ul>
 					{% endif %}
-					<form class="navbar-form navbar-right">
-						<input type="text" class="form-control" placeholder="Search..." accesskey="f" id="site-search" data-url="{% url 'search' %}" autocomplete="off" autocorrect="off" autocapitalize="off">
+					<form class="navbar-form navbar-right" method="post" action="{% url 'jump' %}">
+						{% csrf_token %}
+						<input type="text" class="form-control" placeholder="Search..." accesskey="f" name="query" id="site-search" data-url="{% url 'search' %}" autocomplete="off" autocorrect="off" autocapitalize="off">
 					</form>
 
 				</div>

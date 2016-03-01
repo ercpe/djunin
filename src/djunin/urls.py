@@ -19,13 +19,15 @@ from django.contrib import admin
 from djunin.views.administration import AdminIndexView
 from djunin.views.dashboard import DashboardView
 from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
-from djunin.views.search import SearchView
+from djunin.views.search import SearchView, JumpToView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
 	url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
 	url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='logout'),
 	url(r'^administration/$', AdminIndexView.as_view(), name='admin'),
+	url(r'^opensearch/', include('opensearch.urls')),
+	url(r'^jump$', JumpToView.as_view(), name='jump'),
 	url(r'^search$', SearchView.as_view(), name='search'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.json$', GraphDataView.as_view(), name='graph_data'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
