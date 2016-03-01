@@ -106,6 +106,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		self.datarows = graph.datarows.all()
 
 		for dr in self.datarows.filter(Q(do_graph=True) | Q(name__in=invert_datarows_names)):
+			invert = dr.name in invert_datarows_names
 			fill = bool(dr.draw and dr.draw in ('AREASTACK', 'AREA', 'STACK'))
 
 			# set stack to True if this is an AREASTACK oder STACK
@@ -113,7 +114,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			stack = dr.draw in ('AREASTACK', 'STACK') or \
 						(dr.draw == 'AREA' and self.datarows.exclude(pk=dr.pk).filter(draw__in=('AREASTACK', 'STACK')).exists())
 
-			data, min_value, max_value = self.get_boundaries(self.get_data(dr, dr.name in invert_datarows_names))
+			data, min_value, max_value = self.get_boundaries(self.get_data(dr))
 
 			flot_opts = {
 				'label': dr.label or None,
@@ -124,6 +125,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 					'steps': False,  # make the graph less blurry
 					'fill': fill,
 				},
+				'invert': invert,
 				'internal_name': dr.name,
 				'description': dr.info,
 				'long_description': dr.extinfo
@@ -182,7 +184,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			'scope': self.data_scope_name,
 		}
 
-	def get_data(self, datarow, invert, *args):
+	def get_data(self, datarow, *args):
 		def _build_data():
 			for k in self.raw_data:
 				value = self.raw_data[k].get(datarow.name, None)
@@ -192,7 +194,7 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 					if datarow.cdef:
 						r = RPN()
 						value = r.calc(datarow.cdef.split(','), self.raw_data[k])
-					yield k, round(value * (-1 if invert else 1), 5)
+					yield k, round(value, 5)
 
 		return list(_build_data())
 
