@@ -75,7 +75,10 @@ function draw_graphs() {
 			opts['crosshair'] = { mode: 'x', };
 			opts['grid'] = $.extend(opts['grid'], {
 				hoverable: true,
-				autoHighlight: false
+				autoHighlight: false,
+				markings: [
+				     { color: '#606060', lineWidth: 1, yaxis: { from: 0, to: 0 } },
+				]
 			});
 
 			opts['hooks'] = {
