@@ -1,4 +1,4 @@
-{% load opensearch_tags %}{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}<!DOCTYPE html>
+{% load opensearch_tags %}{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}{% load compress %}<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -10,9 +10,11 @@
 
 		{% block head %}{% endblock %}
 
+		{% compress css %}
 		<link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
 		<link href="{% static 'site.css' %}" rel="stylesheet">
 		{% block styles %}{% endblock %}
+		{% endcompress %}
 
 		{% opensearch_meta %}
 	</head>
@@ -90,10 +92,12 @@
 			</div>
 		</div>
 
+		{% compress js %}
 		<script type="text/javascript" src="{% static 'jquery.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'jQuery-Autocomplete/jquery.autocomplete.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'site.js' %}"></script>
 		{% block scripts %}{% endblock %}
+		{% endcompress %}
 	</body>
 </html>
