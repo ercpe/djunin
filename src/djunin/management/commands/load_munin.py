@@ -2,6 +2,7 @@
 import argparse
 import logging
 import shlex
+import itertools
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -39,7 +40,7 @@ class Command(BaseCommand):
 		logger.info("Removing nodes")
 		# then remove all other nodes
 		q_filter = None
-		for g, n in existing_nodes:
+		for g, n in itertools.chain(existing_nodes, [(n.group, n.name) for n in datafile.nodes]):
 			f = Q(group=g, name=n)
 			if q_filter is None:
 				q_filter = f
