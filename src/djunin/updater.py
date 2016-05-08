@@ -94,7 +94,7 @@ class Updater(object):
 				if not m:
 					logger.error("No pattern matched line: %s", line)
 
-		for f in sorted(_read_and_parse()):
+		for f in _read_and_parse():
 			yield f
 
 	def update(self, data):

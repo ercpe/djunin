@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from StringIO import StringIO
+try:
+	from StringIO import StringIO
+except ImportError:
+	from io import StringIO
 
 from django.test import TestCase
 
-from djunin.models import Node, Graph, DataRow
 from djunin.updater import Updater, Row
 
 class UpdaterTestCase(TestCase):
@@ -24,13 +26,13 @@ class UpdaterTestCase(TestCase):
 
 		data = list(updater.prepare(fp))
 
-		self.assertListEqual(sorted(data), sorted([
+		self.assertListEqual(data, [
 			Row('group', 'node', 'threads', None, None, 'graph_title', 'Number of threads'),
 			Row('group', 'node', 'threads', None, None, 'graph_vlabel', 'number of threads'),
 			Row('group', 'node', 'threads', None, None, 'graph_category', 'processes'),
 			Row('group', 'node', 'threads', None, 'threads', 'graph_data_size', 'normal'),
 			Row('group', 'node', 'threads', None, 'threads', 'label', 'threads'),
-		]))
+		])
 
 	def test_subgraph_parsing(self):
 		updater = Updater()
@@ -46,13 +48,13 @@ class UpdaterTestCase(TestCase):
 
 		data = list(updater.prepare(fp))
 
-		self.assertListEqual(sorted(data), sorted([
+		self.assertListEqual(data, [
 			Row('group', 'node', 'diskstats_iops', None, None, 'graph_title', 'Disk IOs per device'),
 			Row('group', 'node', 'diskstats_iops', None, None, 'graph_category', 'disk'),
 			Row('group', 'node', 'diskstats_iops', 'xvda2', None, 'graph_title', 'IOs for /dev/xvda2'),
 			Row('group', 'node', 'diskstats_iops', 'xvda2', 'avgwrrqsz', 'draw', 'LINE1'),
 			Row('group', 'node', 'diskstats_iops', 'xvda2', 'avgwrrqsz', 'graph_data_size', 'normal'),
-		]))
+		])
 
 	def test_parse_graph_args_empty(self):
 		updater = Updater()
