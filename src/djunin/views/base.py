@@ -1,19 +1,9 @@
 # -*- coding: utf-8 -*-
 from djunin.models import Node
-from djunin.objects import MuninDataFile
 
 class BaseViewMixin(object):
 	page_title = None
 	sidebar_item = None
-
-	def __init__(self):
-		self._datafile = None
-
-	@property
-	def data_file(self):
-		if self._datafile is None:
-			self._datafile = MuninDataFile()
-		return self._datafile
 
 	@property
 	def all_node_groups(self):
