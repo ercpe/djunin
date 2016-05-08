@@ -40,7 +40,7 @@
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right visible-xs-inline">
-						<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+						<!-- <li><a href="{% url 'dashboard' %}">Dashboard</a></li> -->
 						<li><a href="{% url 'nodes' %}">Nodes</a></li>
 					</ul>
 					{% if user.is_superuser %}
@@ -62,7 +62,7 @@
 			<div class="row">
 				<div class="col-sm-3 col-md-2 sidebar">
 					<ul class="nav nav-sidebar">
-						<li{% if sidebar_item == "dashboard" %} class="active"{% endif %}><a href="{% url 'dashboard' %}" title="{% trans 'Dashboard' %}">{% trans 'Dashboard' %} <span class="sr-only">(current)</span></a></li>
+						<!-- <li{% if sidebar_item == "dashboard" %} class="active"{% endif %}><a href="{% url 'dashboard' %}" title="{% trans 'Dashboard' %}">{% trans 'Dashboard' %} <span class="sr-only">(current)</span></a></li> -->
 						<li{% if sidebar_item == "nodes" %} class="active"{% endif %}>
 							<a href="{% url 'nodes' %}" title="{% trans 'Nodes' %}">{% trans 'Nodes' %}</a>
 							<ul class="nav" role="menu">

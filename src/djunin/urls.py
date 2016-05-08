@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.views.generic.base import RedirectView
 
 from djunin.views.administration import AdminIndexView
-from djunin.views.dashboard import DashboardView
+#from djunin.views.dashboard import DashboardView
 from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
 from djunin.views.search import SearchView, JumpToView
 
@@ -33,5 +34,6 @@ urlpatterns = [
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),
 	url(r'^nodes/?$', NodesListView.as_view(), name='nodes'),
-	url(r'^$', DashboardView.as_view(), name='dashboard'),
+	#url(r'^$', DashboardView.as_view(), name='dashboard'),
+	url(r'^$', RedirectView.as_view(pattern_name='nodes'), name='dashboard'),
 ]
