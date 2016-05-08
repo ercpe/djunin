@@ -144,6 +144,7 @@ class Updater(object):
 							setattr(g, k, v)
 				if not g.graph_category:
 					g.graph_category = 'other'
+				g.graph_category = (g.graph_category or '').lower() or 'other'
 				yield g
 
 		Graph.objects.bulk_create(_build_root_graphs())
