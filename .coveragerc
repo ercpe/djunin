@@ -1,0 +1,9 @@
+[run]
+branch = True
+
+omit =
+	djunin/migrations/*
+	djunin/settings.py
+	djunin/wsgi.py
+	djunin/urls.py
+	manage.py
