@@ -45,7 +45,7 @@
 					</ul>
 					{% if user.is_superuser %}
 						<ul class="nav navbar-nav navbar-right">
-							<li><a href="{% url 'dashboard' %}">{% bootstrap_icon 'cog' %} {% trans 'Administration' %}</a></li>
+							<li><a href="{% url 'manage' %}">{% bootstrap_icon 'cog' %} {% trans 'Administration' %}</a></li>
 							<li><a href="{% url 'logout' %}">{% bootstrap_icon 'off' %} {% trans 'Logout' %}</a></li>
 						</ul>
 					{% endif %}

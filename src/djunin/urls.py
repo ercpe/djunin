@@ -17,7 +17,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 
-from djunin.views.administration import AdminIndexView
+from djunin.views.management import ManagementView
 #from djunin.views.dashboard import DashboardView
 from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
 from djunin.views.search import SearchView, JumpToView
@@ -26,7 +26,7 @@ urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
 	url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
 	url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='logout'),
-	url(r'^administration/$', AdminIndexView.as_view(), name='admin'),
+	url(r'^administration/$', ManagementView.as_view(), name='admin'),
 	url(r'^opensearch/', include('opensearch.urls')),
 	url(r'^jump$', JumpToView.as_view(), name='jump'),
 	url(r'^search$', SearchView.as_view(), name='search'),
@@ -34,6 +34,7 @@ urlpatterns = [
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),
 	url(r'^nodes/?$', NodesListView.as_view(), name='nodes'),
+	url(r'^manage$', ManagementView.as_view(), name='manage'),
 	#url(r'^$', DashboardView.as_view(), name='dashboard'),
-	url(r'^$', RedirectView.as_view(pattern_name='nodes'), name='dashboard'),
+	url(r'^$', RedirectView.as_view(pattern_name='nodes', permanent=False), name='dashboard'),
 ]
