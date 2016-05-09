@@ -36,7 +36,9 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		elif data_scope == 'week':
 			self.data_scope = SCOPE_WEEK
 		elif data_scope == 'month':
-			self.data_scope = "-s -756h"
+			self.data_scope = SCOPE_MONTH
+		elif data_scope == 'year':
+			self.data_scope = SCOPE_YEAR
 		else:
 			raise ValueError("Unknown scope '%s'" % data_scope)
 
@@ -163,6 +165,8 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				date_range = "-s -176h"
 			elif self.data_scope == SCOPE_MONTH:
 				date_range = "-s -756h"
+			elif self.data_scope == SCOPE_YEAR:
+				date_range = "-s -365d"
 
 			(self._start, self._end, self._resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
 

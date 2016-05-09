@@ -54,6 +54,7 @@ class GraphsListView(NodesListView):
 	@property
 	def node(self):
 		if self._node is None:
+			logger.debug("Searching node: %s/%s", self.kwargs['group'], self.kwargs['node'])
 			self._node = get_object_or_404(Node.objects.filter(group=self.kwargs['group'], name=self.kwargs['node']))
 		return self._node
 
@@ -65,18 +66,25 @@ class GraphsListView(NodesListView):
 		kwargs.setdefault('node', self.node)
 		kwargs.setdefault('selected_group', self.node.group)
 		kwargs.setdefault('current_category', self.current_category)
+		kwargs.setdefault('detailed', 'graph_name' in self.kwargs)
 		return super(GraphsListView, self).get_context_data(nodes=super(GraphsListView, self).get_queryset(), **kwargs)
 
 	def get_queryset(self):
-		return super(ListView, self).get_queryset().\
-			filter(node=self.node, parent=None, graph_category=self.current_category).\
-			select_related('node').\
-			order_by('graph_category', 'name')
+		logger.debug("Filter by category: %s", self.current_category)
+		q = super(ListView, self).get_queryset().\
+			filter(node=self.node, parent=None, graph_category=self.current_category)
+
+		if self.kwargs.get('graph_name', None):
+			logger.debug("Filter by graph: %s", self.kwargs['graph_name'])
+			q = q.filter(name=self.kwargs['graph_name'])
+
+		return q.select_related('node').order_by('graph_category', 'name')
 
 	def get(self, request, *args, **kwargs):
 		if not self.kwargs.get('graph_category', None):
 			kw = self.kwargs
 			kw['graph_category'] = self.node.graph_categories[0]
+			logger.debug("Redirect to first category: %s", kw['graph_category'])
 			return HttpResponseRedirect(reverse('graphs', kwargs=kw))
 
 		return super(GraphsListView, self).get(request, *args, **kwargs)
