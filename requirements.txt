@@ -2,7 +2,6 @@
 django
 django-opensearch
 django-bootstrap3
-django-bulk-update
 django-compressor
 pytz
 pyparsing
