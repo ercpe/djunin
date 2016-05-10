@@ -47,9 +47,10 @@ class GraphsListView(NodesListView):
 	def __init__(self, *args, **kwargs):
 		super(GraphsListView, self).__init__(*args, **kwargs)
 		self._node = None
+		self._current_graph = None
 
 	def get_page_title(self):
-		return self.node.name
+		return self.current_graph or self.node.name
 
 	@property
 	def node(self):
@@ -62,10 +63,21 @@ class GraphsListView(NodesListView):
 	def current_category(self):
 		return self.kwargs['graph_category']
 
+	@property
+	def current_graph(self):
+		graph_name = self.kwargs.get('graph_name', None)
+		if graph_name:
+			if not self._current_graph:
+				self._current_graph = get_object_or_404(Graph.objects.filter(node=self.node, name=graph_name))
+			return self._current_graph
+
+		return graph_name
+
 	def get_context_data(self, **kwargs):
 		kwargs.setdefault('node', self.node)
 		kwargs.setdefault('selected_group', self.node.group)
 		kwargs.setdefault('current_category', self.current_category)
+		kwargs.setdefault('current_graph', self.current_graph)
 		kwargs.setdefault('detailed', 'graph_name' in self.kwargs)
 		return super(GraphsListView, self).get_context_data(nodes=super(GraphsListView, self).get_queryset(), **kwargs)
 
@@ -74,9 +86,9 @@ class GraphsListView(NodesListView):
 		q = super(ListView, self).get_queryset().\
 			filter(node=self.node, parent=None, graph_category=self.current_category)
 
-		if self.kwargs.get('graph_name', None):
-			logger.debug("Filter by graph: %s", self.kwargs['graph_name'])
-			q = q.filter(name=self.kwargs['graph_name'])
+		if self.current_graph:
+			logger.debug("Filter by graph: %s", self.current_graph)
+			q = q.filter(pk=self.current_graph.pk)
 
 		return q.select_related('node').order_by('graph_category', 'name')
 

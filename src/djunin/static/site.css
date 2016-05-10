@@ -143,6 +143,8 @@ html { overflow-y: scroll; }
 
 a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom: 7px !important; }
 
+.graph-title { text-align: center; }
+
 .djunin-graph { height: 240px; }
 .djunin-graph-legend { margin-bottom: 30px; margin-right: 15px; }
 .djunin-graph-legend tr:nth-child(1):hover { background-color: transparent; }
