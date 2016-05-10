@@ -28,7 +28,9 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					{% if node %}
+					{% if current_graph %}
+						<a class="navbar-brand" href="{% url 'graphs' node.group node current_graph.graph_category %}" title="{{node}}">{{node}}</a>
+					{% elif node %}
 						<a class="navbar-brand" href="{% url 'group_nodes' node.group %}">{{node.group}}</a>
 					{% else %}
 						{% if nodes and selected_group %}
