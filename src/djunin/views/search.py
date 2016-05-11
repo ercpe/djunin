@@ -24,11 +24,12 @@ class SearchView(View):
 		def _search():
 			chunks = [x.strip().lower() for x in query_string.split() if x.strip()]
 
-			def _make_filter(field_name):
+			def _make_filter(*field_name):
 				q = None
 				for c in chunks:
-					f = Q(**{'%s__contains' % field_name: c})
-					q = f if q is None else q | f
+					for fname in field_name:
+						f = Q(**{'%s__contains' % fname: c})
+						q = f if q is None else q | f
 				return q
 
 			results = []
@@ -59,6 +60,22 @@ class SearchView(View):
 					1 if any((graph_category.startswith(c) for c in chunks)) else 0,
 				]))
 				for group_name, node_name, graph_category in set(graph_category_q)
+			))
+
+			# graphs
+			graph_category_q = Graph.objects.filter(_make_filter('name', 'graph_title')).\
+									values_list('name', 'graph_title', 'node__group', 'node__name', 'graph_category').\
+									distinct()
+			results.extend((
+				("%s / %s" % (graph_title or graph_name, node_name),
+					reverse('graphs', args=(group_name, node_name, graph_category)) + '#%s' % graph_name, sum([
+					1 if any((c in graph_name for c in chunks)) else 0,
+					1 if any((c in graph_title for c in chunks)) else 0,
+					1 if any((group_name.startswith(c) for c in chunks)) else 0,
+					1 if any((node_name.startswith(c) for c in chunks)) else 0,
+					1 if any((graph_category.startswith(c) for c in chunks)) else 0,
+				]))
+				for graph_name, graph_title, group_name, node_name, graph_category in set(graph_category_q)
 			))
 
 			return [

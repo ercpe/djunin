@@ -162,7 +162,4 @@ $(document).ready(function () {
 			return false;
 		}
 	});
-	$('#site-search').parents('form').on('submit', function() {
-		console.log("SUBMIT");
-	});
 });
