@@ -57,7 +57,7 @@ class SearchView(View):
 					1 if any((node_name.startswith(c) for c in chunks)) else 0,
 					1 if any((graph_category.startswith(c) for c in chunks)) else 0,
 				]))
-				for group_name, node_name, graph_category in graph_category_q
+				for group_name, node_name, graph_category in set(graph_category_q)
 			))
 
 			return [
