@@ -33,10 +33,11 @@ class SearchView(View):
 
 			results = []
 
+			# group
 			group_q = Node.objects.filter(_make_filter('group')).values_list('group', flat=True).distinct()
 			results.extend((
 				(group_name, reverse('group_nodes', args=(group_name, )), 2 if any((group_name.startswith(c) for c in chunks)) else 1)
-				for group_name in group_q
+				for group_name in set(group_q)
 			))
 
 			# nodes
