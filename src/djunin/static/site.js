@@ -135,6 +135,10 @@ function draw_graphs() {
 				}
 			}
 
+			if (window.location.hash) {
+				o = $(window.location.hash);
+				if (o.length) $(window).scrollTop($(window.location.hash).offset().top - 70);
+			}
 
 			$(elem).bind("plothover",  function (event, pos, item) {
 				latestPosition = pos;
@@ -151,7 +155,6 @@ function draw_graphs() {
 }
 
 $(document).ready(function () {
-
 	draw_graphs();
 
 	$('#site-search').autocomplete({
@@ -162,4 +165,5 @@ $(document).ready(function () {
 			return false;
 		}
 	});
+
 });
