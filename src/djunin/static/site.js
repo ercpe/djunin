@@ -159,8 +159,8 @@ $(document).ready(function () {
 
 	$('#site-search').autocomplete({
 		serviceUrl: $('#site-search').data('url'),
+		width: '300px',
 		onSelect: function (suggestion) {
-			console.log(suggestion);
 			window.location.href = suggestion.data;
 			return false;
 		}
