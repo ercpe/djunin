@@ -34,6 +34,7 @@ class Graph(ModelBase):
 	graph_args_base = models.IntegerField(null=True, blank=True)
 	graph_args_lower_limit = models.BigIntegerField(null=True, blank=True)
 	graph_args_upper_limit = models.BigIntegerField(null=True, blank=True)
+	graph_args_rigid = models.BooleanField(default=False)
 	graph_category = models.CharField(max_length=250)
 	graph_info = models.TextField(blank=True)
 	graph_order = models.TextField(blank=True)

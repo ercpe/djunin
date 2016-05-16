@@ -93,9 +93,9 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			}
 		}
 
-		if graph.graph_args_lower_limit is not None:
+		if graph.graph_args_lower_limit is not None and graph.graph_args_rigid:
 			opts['yaxis']['min'] = graph.graph_args_lower_limit
-		if graph.graph_args_upper_limit is not None:
+		if graph.graph_args_upper_limit is not None and graph.graph_args_rigid:
 			opts['yaxis']['max'] = graph.graph_args_upper_limit
 
 		if graph.graph_vlabel:

@@ -266,7 +266,7 @@ class Updater(object):
 		try:
 			x = parser.parse_args(shlex.split(args_s))
 
-			supported_args = 'base', 'lower_limit', 'upper_limit'
+			supported_args = 'base', 'lower_limit', 'upper_limit', 'rigid'
 			return dict(("graph_args_%s" % a, getattr(x, a, None)) for a in supported_args if getattr(x, a, None))
 		except:
 			logger.exception("Could not parse args '%s'", args_s)
