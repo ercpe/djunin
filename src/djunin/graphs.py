@@ -50,7 +50,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 		self._rrdcached = getattr(settings, 'RRDCACHED', None)
 		self._flush_rrdcached_before_fetch = getattr(settings, 'FLUSH_BEFORE_FETCH', False)
 
-
 	def generate(self, node, graph, data_scope=SCOPE_DAY):
 		d = {
 			'graph_name': graph.name,
@@ -58,6 +57,11 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 			'datarows': list(self.generate_datarows(node, graph)),
 			'_meta': self.get_meta_options(node, graph),
 		}
+
+		if graph.graph_args_rigid or (graph.graph_args_lower_limit and all([dr['min_value'] > graph.graph_args_lower_limit for dr in d['datarows']])):
+			d['options']['yaxis']['min'] = graph.graph_args_lower_limit
+		if graph.graph_args_rigid or (graph.graph_args_upper_limit and all([dr['max_value'] < graph.graph_args_upper_limit for dr in d['datarows']])):
+			d['options']['yaxis']['max'] = graph.graph_args_upper_limit
 
 		return d, self._start, self._end, self._resolution
 
@@ -92,11 +96,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				'axisLabelColour': 'rgb(84, 84, 84)',
 			}
 		}
-
-		if graph.graph_args_lower_limit is not None and graph.graph_args_rigid:
-			opts['yaxis']['min'] = graph.graph_args_lower_limit
-		if graph.graph_args_upper_limit is not None and graph.graph_args_rigid:
-			opts['yaxis']['max'] = graph.graph_args_upper_limit
 
 		if graph.graph_vlabel:
 			opts['yaxis']['axisLabel'] = graph.graph_vlabel.replace('${graph_period}', graph.graph_period or 'second')

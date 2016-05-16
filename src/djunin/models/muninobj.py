@@ -81,3 +81,4 @@ class DataRow(ModelBase):
 	class Meta(ModelBase.Meta):
 		unique_together = 'graph', 'name'
 		ordering = 'graph', 'name'
+
