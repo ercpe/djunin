@@ -71,4 +71,10 @@ class UpdaterTestCase(TestCase):
 			'graph_args_base': '1000',
 			'graph_args_lower_limit': '0',
 			'graph_args_upper_limit': '400',
+			'graph_args_rigid': True,
+		})
+
+		d = updater.parse_graph_args('--base 1000')
+		self.assertEqual(d, {
+			'graph_args_base': '1000',
 		})
