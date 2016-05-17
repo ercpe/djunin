@@ -18,8 +18,8 @@
 			for (var i = 0; i < data.length; i++) {
 				var row = $('.label_' + data[i].internal_name, legend).parents('tr');
 
-				var min_value = data[i].min_value ? yaxis.tickFormatter(data[i].min_value, yaxis) : 'NaN';
-				var max_value = data[i].max_value ? yaxis.tickFormatter(data[i].max_value, yaxis) : 'NaN';
+				var min_value = data[i].min_value ? yaxis.tickFormatter(data[i].min_value, yaxis) : '-';
+				var max_value = data[i].max_value ? yaxis.tickFormatter(data[i].max_value, yaxis) : '-';
 				$('.datarow-min', row).text(min_value);
 				$('.datarow-max', row).text(max_value);
 			}

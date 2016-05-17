@@ -131,7 +131,7 @@ function draw_graphs() {
 
 					var formatted_value = y ? series.yaxis.tickFormatter(y, series.yaxis) : null;
 					if (formatted_value === 0) formatted_value = 0;
-					$('tr:nth-child(' + (i+2) + ') > .datarow-current', legend_container).text(formatted_value ? formatted_value : 'NaN');
+					$('tr:nth-child(' + (i+2) + ') > .datarow-current', legend_container).text(formatted_value ? formatted_value : '-');
 				}
 			}
 
