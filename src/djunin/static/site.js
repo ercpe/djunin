@@ -1,3 +1,4 @@
+/*
 function suffixFormatter(base, val, axis) {
 	if (val == 0) return val;
 
@@ -36,7 +37,6 @@ function align_legend(plot, offset) {
 
 var updateLegendTimeout = null;
 var latestPosition = null;
-
 
 function draw_graphs() {
 	$('.djunin-graph:visible').each(function(i, elem) {
@@ -151,6 +151,100 @@ function draw_graphs() {
 			$(elem).html('<div class="alert alert-danger">There was a error fetching the data for this graph.</div>');
 			$(elem).css('height', 'auto');
 		});
+	});
+}
+*/
+
+function render_graphs(container_id, url) {
+	var container = $('#' + container_id)
+
+	var margin = {top: 20, right: 80, bottom: 30, left: 50},
+    	width = container.width() - margin.left - margin.right,
+    	height = container.height() - margin.top - margin.bottom;
+
+	var x = d3.time.scale().range([0, width]);
+	var y = d3.scale.linear().range([height, 0]);
+	var color = d3.scale.category10();
+
+	var xAxis = d3.svg.axis().scale(x).orient("bottom");
+	var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5).tickFormat(d3.format("s"));
+
+	var line = d3.svg.line().interpolate("basis")
+		.defined(function(d) { return d.value != null; }) // makes null values a gap
+		.x(function(d) { return x(d.date); })
+		.y(function(d) { return y(d.value); });
+
+	var svg = d3.select('#' + container_id).append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	$.get(url, function(response) {
+		color.domain(response.datarows);
+
+		$.each(response.values, function(idx, elem) {
+			elem.date = new Date(elem[0]);
+		});
+
+		var datarows = color.domain().map(function(name) {
+			return {
+				name: name,
+				values: $.map(response.values, function(row) {
+					return {
+						date: new Date(row[0]),
+						value: row[1][name]
+					}
+				})
+			};
+		});
+
+		x.domain(d3.extent(response.values, function(d) { return d.date; }));
+
+		y_min = response.yaxis.min || 0; // d3.min(datarows, function(c) { return d3.min(c.values, function(v) { return v.value; }); });
+		y_max = response.yaxis.max || d3.max(datarows, function(c) { return d3.max(c.values, function(v) { return v.value; }); });
+		y.domain([y_min, y_max]);
+
+		svg.append("g")
+		  .attr("class", "x axis")
+		  .attr("transform", "translate(0," + height + ")")
+		  .call(xAxis);
+
+		var graph_yaxis = svg.append("g")
+		  	.attr("class", "y axis")
+		  	.call(yAxis);
+
+		if (response.yaxis.label) {
+			graph_yaxis.append("text")
+			  .attr("transform", "rotate(-90)")
+			  .attr("y", 6)
+			  .attr("dy", "-40")
+			  .style("text-anchor", "end")
+			  .text(response.yaxis.label);
+		}
+
+		var datarow = svg.selectAll(".datarow").data(datarows).enter().append("g").attr("class", "datarow");
+		datarow.append("path")
+			.attr("class", "line")
+			.attr("d", function(d) { return line(d.values); })
+			.style("stroke", function(d) { return color(d.name); });
+
+//		  city.append("text")
+//			  .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+//			  .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+//			  .attr("x", 3)
+//			  .attr("dy", ".35em")
+//			  .text(function(d) { return d.name; });
+
+	});
+}
+
+function draw_graphs() {
+	$('.djunin-graph:visible').each(function(i, elem) {
+		var url = $(elem).data('url');
+		if (url) {
+			render_graphs(elem.id, url);
+		}
 	});
 }
 

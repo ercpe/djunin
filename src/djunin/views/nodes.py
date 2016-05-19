@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from djunin.graphs import FlotGraphDataGenerator
+from djunin.graphs import FlotGraphDataGenerator, D3GraphDataGenerator
 from djunin.models.muninobj import Node, Graph
 from djunin.views.base import BaseViewMixin
 import logging
@@ -124,13 +124,8 @@ class GraphDataView(BaseViewMixin, DetailView):
 		try:
 			scope_name = self.kwargs.get('scope', '')
 
-			data, start, end, resolution = FlotGraphDataGenerator(data_scope=scope_name).generate(self.node, self.object)
+			data, start, end, resolution = D3GraphDataGenerator(scope_name).generate(self.node, self.object)
 			response = JsonResponse(data)
-
-			if start and end and resolution:
-				response['Expires'] = http_date(time.mktime(datetime.datetime.fromtimestamp(end).replace(tzinfo=pytz.UTC).timetuple()) + resolution)
-				response['Last-Modified'] = http_date(end)
-				response['Cache-Control'] = 'public'
 
 			return response
 		except:

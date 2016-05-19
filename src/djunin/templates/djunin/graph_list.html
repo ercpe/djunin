@@ -2,12 +2,7 @@
 {% load staticfiles %}
 
 {% block scripts %}
-	<script type="text/javascript" src="{% static 'flot/jquery.flot.min.js' %}"></script>
-	<script type="text/javascript" src="{% static 'flot/jquery.flot.time.min.js' %}"></script>
-	<script type="text/javascript" src="{% static 'flot/jquery.flot.stack.min.js' %}"></script>
-	<script type="text/javascript" src="{% static 'flot/jquery.flot.crosshair.min.js' %}"></script>
-	<script type="text/javascript" src="{% static 'jquery.flot.axislabels.js' %}"></script>
-	<script type="text/javascript" src="{% static 'jquery.flot.djunin.js' %}"></script>
+	<script src="{% static 'd3.v3.min.js' %}" charset="utf-8"></script>
 {% endblock %}
 
 {% block title %}{% if current_graph %}{{current_graph}} :: {% endif %}{{current_category}} :: {{block.super}}{% endblock %}

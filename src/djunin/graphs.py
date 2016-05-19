@@ -21,36 +21,88 @@ SCOPE_RANGE = 5
 
 class GraphDataGenerator(object):
 
+	def __init__(self, scope_name):
+		self.data_scope_name = scope_name
+		if scope_name == 'day':
+			self.data_scope = SCOPE_DAY
+		elif scope_name == 'week':
+			self.data_scope = SCOPE_WEEK
+		elif scope_name == 'month':
+			self.data_scope = SCOPE_MONTH
+		elif scope_name == 'year':
+			self.data_scope = SCOPE_YEAR
+		else:
+			raise ValueError("Unknown scope '%s'" % scope_name)
+
+		self._datarows = None
+		self._raw_data = None
+		self._start = None
+		self._end = None
+		self._resolution = None
+		self._rrdcached = getattr(settings, 'RRDCACHED', None)
+		self._flush_rrdcached_before_fetch = getattr(settings, 'FLUSH_BEFORE_FETCH', False)
+
+	@property
+	def raw_data(self):
+		if self._raw_data is None:
+			self._raw_data = self._read_data()
+		return self._raw_data
+
+	@property
+	def datarows(self):
+		if self._datarows is None:
+			pass
+
+		return self._datarows
+
+	def _read_data(self):
+
+		d = OrderedDict()
+		for dr in self.datarows:
+			datafile = str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile))
+
+			if self._flush_rrdcached_before_fetch and self._rrdcached:
+				try:
+					rrdtool.flushcached(['--daemon', self._rrdcached, datafile])
+				except:
+					logger.exception("Could not flushrrdcached at %s", self._rrdcached)
+
+			date_range = ""
+			if self.data_scope == SCOPE_DAY:
+				date_range = "-s -28h"
+			elif self.data_scope == SCOPE_WEEK:
+				date_range = "-s -176h"
+			elif self.data_scope == SCOPE_MONTH:
+				date_range = "-s -756h"
+			elif self.data_scope == SCOPE_YEAR:
+				date_range = "-s -365d"
+
+			(self._start, self._end, self._resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
+
+			for dt, value in zip(
+					(x * 1000 for x in xrange(self._start, self._end - self._resolution, self._resolution)),
+					(x[0] for x in data)
+			):
+
+				if dt not in d:
+					d[dt] = {}
+
+				d[dt][dr.name] = value
+
+		return d
+
 	def generate(self, node, graph):
 		raise NotImplementedError
 
 
 class FlotGraphDataGenerator(GraphDataGenerator):
 
-	def __init__(self, data_scope):
-		super(FlotGraphDataGenerator, self).__init__()
+	def __init__(self, scope_name):
+		super(FlotGraphDataGenerator, self).__init__(scope_name)
 
-		self.data_scope_name = data_scope
-		if data_scope == 'day':
-			self.data_scope = SCOPE_DAY
-		elif data_scope == 'week':
-			self.data_scope = SCOPE_WEEK
-		elif data_scope == 'month':
-			self.data_scope = SCOPE_MONTH
-		elif data_scope == 'year':
-			self.data_scope = SCOPE_YEAR
-		else:
-			raise ValueError("Unknown scope '%s'" % data_scope)
-
-		self._start = None
-		self._end = None
-		self._resolution = None
 		self.datarows = None
-		self._raw_data = None
-		self._rrdcached = getattr(settings, 'RRDCACHED', None)
-		self._flush_rrdcached_before_fetch = getattr(settings, 'FLUSH_BEFORE_FETCH', False)
 
-	def generate(self, node, graph, data_scope=SCOPE_DAY):
+	def generate(self, node, graph):
 		d = {
 			'graph_name': graph.name,
 			'options': self.generate_graph_options(node, graph),
@@ -139,47 +191,6 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 
 			yield flot_opts
 
-	@property
-	def raw_data(self):
-		if self._raw_data is None:
-			self._raw_data = self._read_data()
-		return self._raw_data
-
-	def _read_data(self):
-
-		d = OrderedDict()
-		for dr in self.datarows:
-			datafile = str(os.path.join(settings.MUNIN_DATA_DIR, dr.rrdfile))
-
-			if self._flush_rrdcached_before_fetch and self._rrdcached:
-				try:
-					rrdtool.flushcached(['--daemon', self._rrdcached, datafile])
-				except:
-					logger.exception("Could not flushrrdcached at %s", self._rrdcached)
-
-			date_range = ""
-			if self.data_scope == SCOPE_DAY:
-				date_range = "-s -28h"
-			elif self.data_scope == SCOPE_WEEK:
-				date_range = "-s -176h"
-			elif self.data_scope == SCOPE_MONTH:
-				date_range = "-s -756h"
-			elif self.data_scope == SCOPE_YEAR:
-				date_range = "-s -365d"
-
-			(self._start, self._end, self._resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
-
-			for dt, value in zip(
-				(x * 1000 for x in xrange(self._start, self._end, self._resolution)),
-				(x[0] for x in data)
-			):
-				if dt not in d:
-					d[dt] = {}
-
-				d[dt][dr.name] = value
-
-		return d
-
 	def get_meta_options(self, node, graph):
 		return {
 			'autoscale': graph.graph_scale,
@@ -215,3 +226,52 @@ class FlotGraphDataGenerator(GraphDataGenerator):
 				max_value = value
 
 		return iterable, min_value, max_value
+
+
+class D3GraphDataGenerator(GraphDataGenerator):
+
+	def __init__(self, *args, **kwargs):
+		super(D3GraphDataGenerator, self).__init__(*args, **kwargs)
+		self._y_min = None
+		self._y_max = None
+		self._graph_data = None
+
+	def generate(self, node, graph):
+		self._datarows = graph.datarows.all() # FIXME
+
+		return {
+			'yaxis': self.yaxis_opts(graph),
+			'datarows': [dr.name for dr in self.datarows],
+			'values': self.graph_data,
+		}, self._start, self._end, self._resolution
+
+	@property
+	def graph_data(self):
+		if self._graph_data is None:
+			self._graph_data = list(self.raw_data.items())
+		return self._graph_data
+
+	@property
+	def y_min(self):
+		if self._y_min is None:
+			self._y_min = min([min(v.values()) for _, v in self.graph_data])
+		return self._y_min
+
+	@property
+	def y_max(self):
+		if self._y_max is None:
+			self._y_max = max([max(v.values()) for _, v in self.graph_data])
+		return self._y_max
+
+	def yaxis_opts(self, graph):
+		opts = {}
+
+		if graph.graph_vlabel:
+			opts['label'] = graph.graph_vlabel.replace('${graph_period}', graph.graph_period or 'second')
+
+		if graph.graph_args_rigid or (graph.graph_args_lower_limit and self.y_min > graph.graph_args_lower_limit):
+			opts['min'] = graph.graph_args_lower_limit
+		if graph.graph_args_rigid or (graph.graph_args_upper_limit and self.y_max < graph.graph_args_upper_limit):
+			opts['max'] = graph.graph_args_upper_limit
+
+		return opts
