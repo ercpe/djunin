@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from djunin.graphs import FlotGraphDataGenerator, D3GraphDataGenerator
+from djunin.graphs import D3GraphDataGenerator
 from djunin.models.muninobj import Node, Graph
 from djunin.views.base import BaseViewMixin
 import logging
@@ -124,7 +124,7 @@ class GraphDataView(BaseViewMixin, DetailView):
 		try:
 			scope_name = self.kwargs.get('scope', '')
 
-			data, start, end, resolution = D3GraphDataGenerator(scope_name).generate(self.node, self.object)
+			data, start, end, resolution = D3GraphDataGenerator(self.node, self.object, scope_name).generate()
 			response = JsonResponse(data)
 
 			return response

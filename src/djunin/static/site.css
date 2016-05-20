@@ -166,10 +166,12 @@ a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom:
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
+/*
 .x.axis path {
-  display: none;
 }
+*/
+
+.zero path { stroke: #c0c0c0; }
 
 .line {
   fill: none;

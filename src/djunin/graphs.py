@@ -21,7 +21,7 @@ SCOPE_RANGE = 5
 
 class GraphDataGenerator(object):
 
-	def __init__(self, scope_name):
+	def __init__(self, node, graph, scope_name):
 		self.data_scope_name = scope_name
 		if scope_name == 'day':
 			self.data_scope = SCOPE_DAY
@@ -34,6 +34,8 @@ class GraphDataGenerator(object):
 		else:
 			raise ValueError("Unknown scope '%s'" % scope_name)
 
+		self.node = node
+		self.graph = graph
 		self._datarows = None
 		self._raw_data = None
 		self._start = None
@@ -51,8 +53,7 @@ class GraphDataGenerator(object):
 	@property
 	def datarows(self):
 		if self._datarows is None:
-			pass
-
+			self._datarows = self.graph.datarows.all()
 		return self._datarows
 
 	def _read_data(self):
@@ -91,141 +92,140 @@ class GraphDataGenerator(object):
 
 		return d
 
-	def generate(self, node, graph):
+	def generate(self):
 		raise NotImplementedError
 
-
-class FlotGraphDataGenerator(GraphDataGenerator):
-
-	def __init__(self, scope_name):
-		super(FlotGraphDataGenerator, self).__init__(scope_name)
-
-		self.datarows = None
-
-	def generate(self, node, graph):
-		d = {
-			'graph_name': graph.name,
-			'options': self.generate_graph_options(node, graph),
-			'datarows': list(self.generate_datarows(node, graph)),
-			'_meta': self.get_meta_options(node, graph),
-		}
-
-		if graph.graph_args_rigid or (graph.graph_args_lower_limit and all([dr['min_value'] > graph.graph_args_lower_limit for dr in d['datarows']])):
-			d['options']['yaxis']['min'] = graph.graph_args_lower_limit
-		if graph.graph_args_rigid or (graph.graph_args_upper_limit and all([dr['max_value'] < graph.graph_args_upper_limit for dr in d['datarows']])):
-			d['options']['yaxis']['max'] = graph.graph_args_upper_limit
-
-		return d, self._start, self._end, self._resolution
-
-	def generate_graph_options(self, node, graph):
-		opts = {
-			'series': {
-				'lines': {
-					'show': True,
-					'lineWidth': 1,
-				},
-				'points': {
-					'show': False,
-					'lineWidth': 1,
-				}
-			},
-			'grid': {
-				'backgroundColor': {
-					'colors': [ "#fff", "#eee" ]
-				},
-				'borderWidth': {
-					'top': 1,
-					'right': 1,
-					'bottom': 2,
-					'left': 2
-				}
-			},
-			'xaxis': {
-				'mode': "time",
-			},
-			'yaxis': {
-				'axisLabelFontSizePixels': 12,
-				'axisLabelColour': 'rgb(84, 84, 84)',
-			}
-		}
-
-		if graph.graph_vlabel:
-			opts['yaxis']['axisLabel'] = graph.graph_vlabel.replace('${graph_period}', graph.graph_period or 'second')
-
-		return opts
-
-	def generate_datarows(self, node, graph):
-		invert_datarows_names = graph.datarows.filter(do_graph=True).exclude(negative='').values_list('negative', flat=True)
-		self.datarows = graph.datarows.all()
-
-		for dr in self.datarows.filter(Q(do_graph=True) | Q(name__in=invert_datarows_names)):
-			invert = dr.name in invert_datarows_names
-			fill = bool(dr.draw and dr.draw in ('AREASTACK', 'AREA', 'STACK'))
-
-			# set stack to True if this is an AREASTACK oder STACK
-			# if it's an AREA, set it only to stack=True if there is at least another stackable data row
-			stack = dr.draw in ('AREASTACK', 'STACK') or \
-						(dr.draw == 'AREA' and self.datarows.exclude(pk=dr.pk).filter(draw__in=('AREASTACK', 'STACK')).exists())
-
-			data, min_value, max_value = self.get_boundaries(self.get_data(dr))
-
-			flot_opts = {
-				'label': dr.label or None,
-				'color': "#" + dr.colour if dr.colour else None,
-				'stack': stack,
-				'lines': {
-					'show': True,
-					'steps': False,  # make the graph less blurry
-					'fill': fill,
-				},
-				'invert': invert,
-				'internal_name': dr.name,
-				'description': dr.info,
-				'long_description': dr.extinfo
-			}
-			flot_opts.update({
-				'min_value': min_value,
-				'max_value': max_value,
-				'data': data
-			})
-
-			yield flot_opts
-
-	def get_meta_options(self, node, graph):
-		return {
-			'autoscale': graph.graph_scale,
-			'base': graph.graph_args_base or None,
-			'scope': self.data_scope_name,
-		}
-
-	def get_data(self, datarow, *args):
-		def _build_data():
-			for k in self.raw_data:
-				value = self.raw_data[k].get(datarow.name, None)
-				if value is None:
-					yield k, value
-				else:
-					if datarow.cdef:
-						r = RPN()
-						value = r.calc(datarow.cdef.split(','), self.raw_data[k])
-					yield k, round(value, 5)
-
-		return list(_build_data())
-
-	def get_boundaries(self, iterable):
-		min_value = None
-		max_value = None
-
-		for _, value in iterable:
-			if value is None:
-				continue
-
-			if min_value is None or value < min_value:
-				min_value = value
-			if max_value is None or value > max_value:
-				max_value = value
-
-		return iterable, min_value, max_value
+# class FlotGraphDataGenerator(GraphDataGenerator):
+#
+# 	def __init__(self, scope_name):
+# 		super(FlotGraphDataGenerator, self).__init__(scope_name)
+#
+# 		self.datarows = None
+#
+# 	def generate(self, node, graph):
+# 		d = {
+# 			'graph_name': graph.name,
+# 			'options': self.generate_graph_options(node, graph),
+# 			'datarows': list(self.generate_datarows(node, graph)),
+# 			'_meta': self.get_meta_options(node, graph),
+# 		}
+#
+# 		if graph.graph_args_rigid or (graph.graph_args_lower_limit and all([dr['min_value'] > graph.graph_args_lower_limit for dr in d['datarows']])):
+# 			d['options']['yaxis']['min'] = graph.graph_args_lower_limit
+# 		if graph.graph_args_rigid or (graph.graph_args_upper_limit and all([dr['max_value'] < graph.graph_args_upper_limit for dr in d['datarows']])):
+# 			d['options']['yaxis']['max'] = graph.graph_args_upper_limit
+#
+# 		return d, self._start, self._end, self._resolution
+#
+# 	def generate_graph_options(self, node, graph):
+# 		opts = {
+# 			'series': {
+# 				'lines': {
+# 					'show': True,
+# 					'lineWidth': 1,
+# 				},
+# 				'points': {
+# 					'show': False,
+# 					'lineWidth': 1,
+# 				}
+# 			},
+# 			'grid': {
+# 				'backgroundColor': {
+# 					'colors': [ "#fff", "#eee" ]
+# 				},
+# 				'borderWidth': {
+# 					'top': 1,
+# 					'right': 1,
+# 					'bottom': 2,
+# 					'left': 2
+# 				}
+# 			},
+# 			'xaxis': {
+# 				'mode': "time",
+# 			},
+# 			'yaxis': {
+# 				'axisLabelFontSizePixels': 12,
+# 				'axisLabelColour': 'rgb(84, 84, 84)',
+# 			}
+# 		}
+#
+# 		if graph.graph_vlabel:
+# 			opts['yaxis']['axisLabel'] = graph.graph_vlabel.replace('${graph_period}', graph.graph_period or 'second')
+#
+# 		return opts
+#
+# 	def generate_datarows(self, node, graph):
+# 		invert_datarows_names = graph.datarows.filter(do_graph=True).exclude(negative='').values_list('negative', flat=True)
+# 		self.datarows = graph.datarows.all()
+#
+# 		for dr in self.datarows.filter(Q(do_graph=True) | Q(name__in=invert_datarows_names)):
+# 			invert = dr.name in invert_datarows_names
+# 			fill = bool(dr.draw and dr.draw in ('AREASTACK', 'AREA', 'STACK'))
+#
+# 			# set stack to True if this is an AREASTACK oder STACK
+# 			# if it's an AREA, set it only to stack=True if there is at least another stackable data row
+# 			stack = dr.draw in ('AREASTACK', 'STACK') or \
+# 						(dr.draw == 'AREA' and self.datarows.exclude(pk=dr.pk).filter(draw__in=('AREASTACK', 'STACK')).exists())
+#
+# 			data, min_value, max_value = self.get_boundaries(self.get_data(dr))
+#
+# 			flot_opts = {
+# 				'label': dr.label or None,
+# 				'color': "#" + dr.colour if dr.colour else None,
+# 				'stack': stack,
+# 				'lines': {
+# 					'show': True,
+# 					'steps': False,  # make the graph less blurry
+# 					'fill': fill,
+# 				},
+# 				'invert': invert,
+# 				'internal_name': dr.name,
+# 				'description': dr.info,
+# 				'long_description': dr.extinfo
+# 			}
+# 			flot_opts.update({
+# 				'min_value': min_value,
+# 				'max_value': max_value,
+# 				'data': data
+# 			})
+#
+# 			yield flot_opts
+#
+# 	def get_meta_options(self, node, graph):
+# 		return {
+# 			'autoscale': graph.graph_scale,
+# 			'base': graph.graph_args_base or None,
+# 			'scope': self.data_scope_name,
+# 		}
+#
+# 	def get_data(self, datarow, *args):
+# 		def _build_data():
+# 			for k in self.raw_data:
+# 				value = self.raw_data[k].get(datarow.name, None)
+# 				if value is None:
+# 					yield k, value
+# 				else:
+# 					if datarow.cdef:
+# 						r = RPN()
+# 						value = r.calc(datarow.cdef.split(','), self.raw_data[k])
+# 					yield k, round(value, 5)
+#
+# 		return list(_build_data())
+#
+# 	def get_boundaries(self, iterable):
+# 		min_value = None
+# 		max_value = None
+#
+# 		for _, value in iterable:
+# 			if value is None:
+# 				continue
+#
+# 			if min_value is None or value < min_value:
+# 				min_value = value
+# 			if max_value is None or value > max_value:
+# 				max_value = value
+#
+# 		return iterable, min_value, max_value
 
 
 class D3GraphDataGenerator(GraphDataGenerator):
@@ -235,26 +235,25 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		self._y_min = None
 		self._y_max = None
 		self._graph_data = None
+		self._invert_datarow_names = []
 
-	def generate(self, node, graph):
-		self._datarows = graph.datarows.all() # FIXME
-
+	def generate(self):
 		return {
-			'yaxis': self.yaxis_opts(graph),
-			'datarows': [dr.name for dr in self.datarows],
+			'yaxis': self.yaxis_opts(),
+			'datarows': self.get_datarows_options(),
 			'values': self.graph_data,
 		}, self._start, self._end, self._resolution
 
 	@property
 	def graph_data(self):
 		if self._graph_data is None:
-			self._graph_data = list(self.raw_data.items())
+			self._graph_data = self.build_graph_data()
 		return self._graph_data
 
 	@property
 	def y_min(self):
 		if self._y_min is None:
-			self._y_min = min([min(v.values()) for _, v in self.graph_data])
+			self._y_min = self._apply_graph_data_values_func(min) #min([min([x for x in v.values() if x is not None]) for _, v in self.graph_data])
 		return self._y_min
 
 	@property
@@ -263,15 +262,58 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			self._y_max = max([max(v.values()) for _, v in self.graph_data])
 		return self._y_max
 
-	def yaxis_opts(self, graph):
+	def _apply_graph_data_values_func(self, func):
+		def _func_wrapper(x):
+			try:
+				return func(x)
+			except ValueError:
+				return None
+
+		return _func_wrapper([x for x in
+							  	[_func_wrapper([x for x in v.values() if x is not None]) for _, v in self.graph_data]
+							 if x is not None])
+
+	def build_graph_data(self):
+		def _inner():
+			for t, datarows in self.raw_data.items():
+				for k, v in datarows.items():
+					if v:
+						datarows[k] = v * -1 if k in self._invert_datarow_names else v
+					else:
+						datarows[k] = v
+				yield t, datarows
+
+		return list(_inner())
+
+	def get_datarows_options(self):
+		all_datarows = self.datarows.filter(do_graph=True)
+
+		datarows = {}
+
+		for dr in all_datarows:
+			d = {
+				'min': dr.min,
+				'max': dr.max,
+			}
+			if dr.negative:
+				d['sameas'] = dr.negative
+
+			if all_datarows.filter(negative=dr.name).exists():
+				self._invert_datarow_names.append(dr.name)
+
+			datarows[dr.name] = d
+
+		return datarows
+
+	def yaxis_opts(self):
 		opts = {}
 
-		if graph.graph_vlabel:
-			opts['label'] = graph.graph_vlabel.replace('${graph_period}', graph.graph_period or 'second')
+		if self.graph.graph_vlabel:
+			opts['label'] = self.graph.graph_vlabel.replace('${graph_period}', self.graph.graph_period or 'second')
 
-		if graph.graph_args_rigid or (graph.graph_args_lower_limit and self.y_min > graph.graph_args_lower_limit):
-			opts['min'] = graph.graph_args_lower_limit
-		if graph.graph_args_rigid or (graph.graph_args_upper_limit and self.y_max < graph.graph_args_upper_limit):
-			opts['max'] = graph.graph_args_upper_limit
+		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min > self.graph.graph_args_lower_limit):
+			opts['min'] = self.graph.graph_args_lower_limit
+		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max < self.graph.graph_args_upper_limit):
+			opts['max'] = self.graph.graph_args_upper_limit
 
 		return opts
