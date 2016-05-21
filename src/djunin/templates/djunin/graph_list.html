@@ -29,12 +29,16 @@
 			<div class="row">
 				<div class="col-md-5">
 					<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by day</a></div>
-					<div id="graph-{{graph.name}}-day" class="djunin-graph" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}"></div>
+					<div id="graph-{{graph.name}}-day" class="djunin-graph"
+						 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}"
+							data-graph-scope="day"></div>
 					<div id="graph-{{graph.name}}-day-legend" class="djunin-graph-legend"></div>
 				</div>
 				<div class="col-md-5{% if not detailed %} hidden-xs{% endif %}">
 					<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by week</a></div>
-					<div id="graph-{{graph.name}}-week" class="djunin-graph" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'week' %}"></div>
+					<div id="graph-{{graph.name}}-week" class="djunin-graph"
+						 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'week' %}"
+							data-graph-scope="week"></div>
 					<div id="graph-{{graph.name}}-week-legend" class="djunin-graph-legend"></div>
 				</div>
 			</div>
@@ -43,12 +47,16 @@
 				<div class="row">
 					<div class="col-md-5">
 						<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by month</a></div>
-						<div id="graph-{{graph.name}}-month" class="djunin-graph" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'month' %}"></div>
+						<div id="graph-{{graph.name}}-month" class="djunin-graph"
+							 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'month' %}"
+								data-graph-scope="month"></div>
 						<div id="graph-{{graph.name}}-month-legend" class="djunin-graph-legend"></div>
 					</div>
 					<div class="col-md-5{% if not detailed %} hidden-xs{% endif %}">
 						<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by year</a></div>
-						<div id="graph-{{graph.name}}-year" class="djunin-graph" data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'year' %}"></div>
+						<div id="graph-{{graph.name}}-year" class="djunin-graph"
+							 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'year' %}"
+								data-graph-scope="year"></div>
 						<div id="graph-{{graph.name}}-year-legend" class="djunin-graph-legend"></div>
 					</div>
 				</div>

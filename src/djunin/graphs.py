@@ -253,7 +253,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 	@property
 	def y_min(self):
 		if self._y_min is None:
-			self._y_min = self._apply_graph_data_values_func(min) #min([min([x for x in v.values() if x is not None]) for _, v in self.graph_data])
+			self._y_min = self._apply_graph_data_values_func(min)
 		return self._y_min
 
 	@property

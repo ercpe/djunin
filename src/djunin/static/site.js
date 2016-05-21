@@ -157,17 +157,28 @@ function draw_graphs() {
 
 function render_graphs(container_id, url) {
 	var container = $('#' + container_id)
+	var graph_scope = container.data('graph-scope');
 
 	var margin = {top: 20, right: 20, bottom: 30, left: 50},
     	width = container.width() - margin.left - margin.right,
     	height = container.height() - margin.top - margin.bottom;
 
-	var xScale = d3.time.scale().range([0, width]);
-	var yScale = d3.scale.linear().range([height, 0]);
 	var color = d3.scale.category10();
 
-	var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
-	var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5).tickFormat(d3.format("s"));
+	var xAxisTicks = 5;
+	var yAxisTicks = 5
+
+	var xScale = d3.time.scale().range([0, width]);
+	var xAxis = d3.svg.axis().scale(xScale)
+					.orient("bottom")
+					.innerTickSize(-height)
+					.ticks(xAxisTicks).tickFormat(graph_scope == "day" ? d3.time.format("%H:%M") : d3.time.format("%b %d"));
+
+	var yScale = d3.scale.linear().range([height, 0]);
+	var yAxis = d3.svg.axis().scale(yScale)
+					.orient("left")
+					.innerTickSize(-width)
+					.ticks(yAxisTicks).tickFormat(d3.format("s"));
 
 	var line = d3.svg.line().interpolate("basis")
 		.defined(function(d) { return d.value != null; }) // makes null values a gap
@@ -203,12 +214,13 @@ function render_graphs(container_id, url) {
 
 		y_min = response.yaxis.min != null ? response.yaxis.min : d3.min(datarows, function(c) { return d3.min(c.values, function(v) { return v.value; }); });
 		y_max = response.yaxis.max != null ? response.yaxis.max : d3.max(datarows, function(c) { return d3.max(c.values, function(v) { return v.value; }); });
+		if (y_min == 0 && y_max == 0) y_max = 1;
 		yScale.domain([y_min, y_max]);
 
 		svg.append("g")
-		  .attr("class", "x axis")
-		  .attr("transform", "translate(0," + height + ")")
-		  .call(xAxis);
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + height + ")")
+		  	.call(xAxis);
 		svg.append("g").attr("class", "x axis zero");
 
 		var graph_yaxis = svg.append("g")
@@ -217,11 +229,14 @@ function render_graphs(container_id, url) {
 
 		if (response.yaxis.label) {
 			graph_yaxis.append("text")
-			  .attr("transform", "rotate(-90)")
-			  .attr("y", 6)
-			  .attr("dy", "-40")
-			  .style("text-anchor", "end")
-			  .text(response.yaxis.label);
+				.attr("transform", "rotate(-90)")
+				.attr("y", 0 - margin.left)
+				.attr("x",0 - (height / 2))
+				.attr("dy", "1em")
+				.style("text-anchor", "middle")
+				.text(response.yaxis.label);
+			  //.attr("y", 6)
+			  //.attr("dy", "-40")
 		}
 
 		var datarow = svg.selectAll(".datarow").data(datarows).enter().append("g").attr("class", "datarow");

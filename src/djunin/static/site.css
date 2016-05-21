@@ -171,6 +171,19 @@ a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom:
 }
 */
 
+
+.axis text {
+	font-size: smaller;
+	fill: rgb(84, 84, 84);
+	shape-rendering: crispEdges;
+}
+
+
+g.x .tick line,
+g.y .tick line {
+	stroke: lightgray;
+}
+
 .zero path { stroke: #c0c0c0; }
 
 .line {
