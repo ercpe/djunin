@@ -3,7 +3,7 @@ import datetime
 import time
 import pytz
 from django.core.urlresolvers import reverse
-from django.http.response import JsonResponse, HttpResponseRedirect
+from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.http import http_date
 from django.utils.translation import ugettext as _
@@ -125,9 +125,8 @@ class GraphDataView(BaseViewMixin, DetailView):
 			scope_name = self.kwargs.get('scope', '')
 
 			data, start, end, resolution = D3GraphDataGenerator(self.node, self.object, scope_name).generate()
-			response = JsonResponse(data)
 
-			return response
+			return JsonResponse(data)
 		except:
 			logger.exception("Error rendering graph data for %s on %s", self.object, self.node)
 			raise

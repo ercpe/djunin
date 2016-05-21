@@ -184,7 +184,7 @@ g.y .tick line {
 	stroke: lightgray;
 }
 
-.zero path { stroke: #c0c0c0; }
+/* .zero line { stroke: red !important; } */
 
 .line {
   fill: none;

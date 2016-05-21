@@ -1,169 +1,16 @@
-/*
-function suffixFormatter(base, val, axis) {
-	if (val == 0) return val;
-
-	var absval = Math.abs(val);
-	var units = ['k', 'M', 'G', 'T', 'P']
-
-	for (var i=0; i < units.length; i++) {
-		var x = Math.pow(base, i+1);
-
-		if (absval < x) {
-			var suffix = "";
-			if (i > 0) suffix = units[i-1]
-
-			var xcalc = val / Math.pow(base, i);
-			if (val < 0) xcalc * -1;
-
-			var decimals = axis.tickDecimals;
-			if ((xcalc === Number(xcalc) && xcalc % 1 !== 0) && axis.tickDecimals == 0) {
-				decimals = 1;
-			}
-
-			return xcalc.toFixed(decimals) + " " + suffix;
-		}
-	}
-	return val;
-}
-
-function align_legend(plot, offset) {
-	$.each(plot.getYAxes(), function(idx, elem) {
-		if (elem.labelWidth) {
-			$('.djunin-graph-legend', $(plot.getCanvas().parentElement).parent()).css('margin-left', (elem.labelWidth + 5) + 'px');
-			return false;
-		}
-	});
-}
-
-var updateLegendTimeout = null;
-var latestPosition = null;
-
-function draw_graphs() {
-	$('.djunin-graph:visible').each(function(i, elem) {
-		var url = $(elem).data('url');
-		if (!url) return;
-
-		$.get(url, function(graph_data){
-			var opts = graph_data['options'];
-			var meta = graph_data['_meta'];
-			var legend_container = $('#graph-' + graph_data['graph_name'] + "-" + meta['scope'] + "-legend");
-
-			if (graph_data['datarows'].length == 0) {
-				$(elem).html('<div class="alert alert-info">This graph has no data.</div>');
-				$(elem).css('height', 'auto');
-				return;
-			}
-
-			opts['legend'] = {
-				container: legend_container,
-				labelFormatter: function(label, series) {
-					return $('<span></span>', {
-						class: "label_" + series.internal_name,
-						text: label,
-						title: series.description || series.long_description,
-					}).prop('outerHTML');
-				}
-			}
-
-			if (meta['autoscale'] === true) {
-				var base = meta['base'] || 1000;
-				opts['yaxis']['tickFormatter'] = function(val, axis) {
-					return suffixFormatter(base, val, axis);
-				}
-			}
-
-			opts['crosshair'] = { mode: 'x', };
-			opts['grid'] = $.extend(opts['grid'], {
-				hoverable: true,
-				autoHighlight: false,
-				markings: [
-				     { color: '#606060', lineWidth: 1, yaxis: { from: 0, to: 0 } },
-				]
-			});
-
-			opts['hooks'] = {
-				processOffset: align_legend,
-			}
-
-			var plot = $.plot($(elem), graph_data['datarows'], opts);
-
-			// custom stuff for our graphs
-			$('table', legend_container).css('width', '100%');
-			$('tr', legend_container).append('<td class="datarow-min col-md-2"></td><td class="datarow-max col-md-2"></td><td class="datarow-current col-md-2"></td>');
-			$('table', legend_container).prepend('<tr><th colspan="2"></th><th class="datarow-min">Min</th><th class="datarow-max">Max</th><th class="datarow-current">Current</th></tr>');
-			$('.legendLabel', legend_container).addClass('col-md-6')
-
-
-			function update_legend() {
-				updateLegendTimeout = null;
-
-				var pos = latestPosition;
-
-				var axes = plot.getAxes();
-				if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
-					pos.y < axes.yaxis.min || pos.y > axes.yaxis.max) {
-					return;
-				}
-
-				var i, j, dataset = plot.getData();
-				for (i = 0; i < dataset.length; ++i) {
-					var series = dataset[i];
-
-					// Find the nearest points, x-wise
-					for (j = 0; j < series.data.length; ++j) {
-						if (series.data[j][0] > pos.x) {
-							break;
-						}
-					}
-
-					// Now Interpolate
-					var y,
-						p1 = series.data[j - 1],
-						p2 = series.data[j];
-
-					if (p1 == null) {
-						y = p2[1];
-					} else if (p2 == null) {
-						y = p1[1];
-					} else {
-						y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
-					}
-
-					var formatted_value = y ? series.yaxis.tickFormatter(y, series.yaxis) : null;
-					if (formatted_value === 0) formatted_value = 0;
-					$('tr:nth-child(' + (i+2) + ') > .datarow-current', legend_container).text(formatted_value ? formatted_value : '-');
-				}
-			}
-
-			if (window.location.hash) {
-				o = $(window.location.hash);
-				if (o.length) $(window).scrollTop($(window.location.hash).offset().top - 70);
-			}
-
-			$(elem).bind("plothover",  function (event, pos, item) {
-				latestPosition = pos;
-				if (!updateLegendTimeout) {
-					updateLegendTimeout = setTimeout(update_legend, 50);
-				}
-			});
-
-		}).fail(function() {
-			$(elem).html('<div class="alert alert-danger">There was a error fetching the data for this graph.</div>');
-			$(elem).css('height', 'auto');
-		});
-	});
-}
-*/
-
 function render_graphs(container_id, url) {
 	var container = $('#' + container_id)
 	var graph_scope = container.data('graph-scope');
+
+	var debug = false;
+
+	//if (debug && graph_scope != "day") return;
 
 	var margin = {top: 20, right: 20, bottom: 30, left: 50},
     	width = container.width() - margin.left - margin.right,
     	height = container.height() - margin.top - margin.bottom;
 
-	var color = d3.scale.category10();
+	var color = d3.scale.category20();
 
 	var xAxisTicks = 5;
 	var yAxisTicks = 5
@@ -185,6 +32,22 @@ function render_graphs(container_id, url) {
 		.x(function(d) { return xScale(d.date); })
 		.y(function(d) { return yScale(d.value); });
 
+	var area = d3.svg.area()
+		.defined(function(d) { return d.value != null; }) // makes null values a gap
+		.x(function(d) {
+			debug && console.log("X: " + xScale(d.date));
+			return xScale(d.date); })
+		.y0(function(d) {
+			debug && console.log(d.name + ": y0: " + d.y0)
+			return yScale(d.y0 || 0)
+		})
+		.y1(function(d) {
+			debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
+			return yScale((d.y0 || 0) + d.value);
+		});
+
+	var stack = d3.layout.stack().values(function(d) { return d.values; });
+
 	var svg = d3.select('#' + container_id).append("svg")
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
@@ -192,41 +55,66 @@ function render_graphs(container_id, url) {
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	$.get(url, function(response) {
-		color.domain(Object.keys(response.datarows));
-
+		// translate into domain objects
 		$.each(response.values, function(idx, elem) {
 			elem.date = new Date(elem[0]);
 		});
 
-		var datarows = color.domain().map(function(name) {
-			return {
+		// build a color map for our datarows
+		color.domain(Object.keys(response.datarows));
+
+		var unstacked_datarows = [];
+		var stacked_datarows = [];
+
+		$.each(Object.keys(response.datarows), function(idx, name) {
+			var o = {
 				name: name,
 				values: $.map(response.values, function(row) {
 					return {
 						date: new Date(row[0]),
-						value: row[1][name]
+						value: row[1][name],
+						y: row[1][name], // required for stacking
 					}
-				})
+				}),
+				draw: response.datarows[name].draw
 			};
+
+			if (o.draw == "AREASTACK" || o.draw == "STACK") {
+				stacked_datarows.push(o);
+			} else {
+				unstacked_datarows.push(o);
+			}
 		});
 
+		if (debug) {
+			console.log("unstacked:");
+			console.log(unstacked_datarows);
+			console.log("stacked:");
+			console.log(stacked_datarows);
+			console.log("Min: Graph: " + response.yaxis.graph_min + ", Value: " + response.yaxis.value_min);
+			console.log("Max: Graph: " + response.yaxis.graph_max + ", Value: " + response.yaxis.value_max);
+		}
+
+		y_min = typeof response.yaxis.graph_min == "undefined" ? response.yaxis.value_min : response.yaxis.graph_min;
+		y_max = response.yaxis.graph_max || response.yaxis.value_max;
+		if (y_min == 0 && y_max == 0) y_max = 1;
+		if (y_min == y_max) y_min = 0;
+		debug && console.log("min: " + y_min + ", max: " + y_max);
+		yScale.domain([y_min, y_max]).nice(yAxisTicks);
+
+		// set the domain for the x axis to the dates
 		xScale.domain(d3.extent(response.values, function(d) { return d.date; }));
 
-		y_min = response.yaxis.min != null ? response.yaxis.min : d3.min(datarows, function(c) { return d3.min(c.values, function(v) { return v.value; }); });
-		y_max = response.yaxis.max != null ? response.yaxis.max : d3.max(datarows, function(c) { return d3.max(c.values, function(v) { return v.value; }); });
-		if (y_min == 0 && y_max == 0) y_max = 1;
-		yScale.domain([y_min, y_max]);
-
+		// add the x axis to the graph object
 		svg.append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + height + ")")
 		  	.call(xAxis);
-		svg.append("g").attr("class", "x axis zero");
 
-		var graph_yaxis = svg.append("g")
-		  	.attr("class", "y axis")
-		  	.call(yAxis);
+		// add the y axis to the graph
+		var graph_yaxis = svg.append("g").attr("class", "y axis").call(yAxis);
 
+		// add the y axis label if available
 		if (response.yaxis.label) {
 			graph_yaxis.append("text")
 				.attr("transform", "rotate(-90)")
@@ -235,28 +123,32 @@ function render_graphs(container_id, url) {
 				.attr("dy", "1em")
 				.style("text-anchor", "middle")
 				.text(response.yaxis.label);
-			  //.attr("y", 6)
-			  //.attr("dy", "-40")
 		}
 
-		var datarow = svg.selectAll(".datarow").data(datarows).enter().append("g").attr("class", "datarow");
-		datarow.append("path")
-			.attr("class", "line")
-			.attr("d", function(d) { return line(d.values); })
-			.style("stroke", function(d) { return color(response.datarows[d.name].sameas || d.name); });
-
-//		  city.append("text")
-//			  .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
-//			  .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
-//			  .attr("x", 3)
-//			  .attr("dy", ".35em")
-//			  .text(function(d) { return d.name; });
-
-		// zero line
-		svg.select(".x.axis.zero")
-			.attr("transform", "translate(0," + yScale(0) + ")")
-			.call(xAxis.tickFormat("").tickSize(0));
-
+		// manipulate the datarows in the graph
+		$.each([stack(stacked_datarows), unstacked_datarows], function(idx, data) {
+			svg.selectAll(".datarow")
+				.data(data)
+				.enter()
+					.append("g")
+					.attr("class", "datarow")
+					.append("path")
+					.each(function(d) {
+						//console.log(d.name + ": " + d.draw)
+						if (d.draw == 'AREA' || d.draw == 'AREASTACK' || d.draw == 'STACK') {
+							d3.select(this)
+								.attr("class", "area")
+								.attr("d", function(d) { return area(d.values); })
+								.style("fill", function(d) { return color(response.datarows[d.name].sameas || d.name); })
+								.style("opacity", '0.7');
+						} else {
+							d3.select(this)
+								.attr("class", "line")
+								.attr("d", function(d) { return line(d.values); })
+								.style("stroke", function(d) { return color(response.datarows[d.name].sameas || d.name); })
+						}
+					});
+		});
 	});
 }
 

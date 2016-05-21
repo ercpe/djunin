@@ -37,6 +37,7 @@ class GraphDataGenerator(object):
 		self.node = node
 		self.graph = graph
 		self._datarows = None
+		self._datarow_cdefs = None
 		self._raw_data = None
 		self._start = None
 		self._end = None
@@ -55,6 +56,12 @@ class GraphDataGenerator(object):
 		if self._datarows is None:
 			self._datarows = self.graph.datarows.all()
 		return self._datarows
+
+	@property
+	def cdefs(self):
+		if self._datarow_cdefs is None:
+			self._datarow_cdefs = dict(self.datarows.filter(name__endswith='_mem').exclude(cdef=None).values_list('name', 'cdef'))
+		return self._datarow_cdefs
 
 	def _read_data(self):
 
@@ -235,7 +242,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		self._y_min = None
 		self._y_max = None
 		self._graph_data = None
-		self._invert_datarow_names = []
+		self._invert_datarow_names = None
 
 	def generate(self):
 		return {
@@ -262,25 +269,48 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			self._y_max = max([max(v.values()) for _, v in self.graph_data])
 		return self._y_max
 
-	def _apply_graph_data_values_func(self, func):
-		def _func_wrapper(x):
+	@property
+	def invert_datarow_names(self):
+		if self._invert_datarow_names is None:
+			self._invert_datarow_names = list(
+				self.datarows.filter(name__in=self.datarows.exclude(negative='').values_list('negative', flat=True)).values_list('name', flat=True)
+			)
+		return self._invert_datarow_names
+
+	def _apply_graph_data_values_func(self, func, inner_func=None):
+		def _func_wrapper(f, values):
 			try:
-				return func(x)
+				return f(values)
 			except ValueError:
 				return None
 
-		return _func_wrapper([x for x in
-							  	[_func_wrapper([x for x in v.values() if x is not None]) for _, v in self.graph_data]
+		outer_func = func
+		inner_func = inner_func or func
+
+		outer = lambda v: _func_wrapper(outer_func, v)
+		inner = lambda v: _func_wrapper(inner_func, v)
+
+		return outer([x for x in
+							  	[inner([x for x in v.values() if x is not None]) for _, v in self.graph_data]
 							 if x is not None])
 
 	def build_graph_data(self):
 		def _inner():
 			for t, datarows in self.raw_data.items():
 				for k, v in datarows.items():
-					if v:
-						datarows[k] = v * -1 if k in self._invert_datarow_names else v
-					else:
-						datarows[k] = v
+					value = v
+
+					if value is not None:
+						if k in self.cdefs:
+							cdef = self.cdefs[k]
+							value = RPN().calc(cdef.split(','), {
+								k: value
+							})
+							value = round(value, 5)
+
+						value = value * -1 if k in self.invert_datarow_names else value
+
+					datarows[k] = value
 				yield t, datarows
 
 		return list(_inner())
@@ -294,12 +324,11 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			d = {
 				'min': dr.min,
 				'max': dr.max,
+				'draw': dr.draw,
 			}
+
 			if dr.negative:
 				d['sameas'] = dr.negative
-
-			if all_datarows.filter(negative=dr.name).exists():
-				self._invert_datarow_names.append(dr.name)
 
 			datarows[dr.name] = d
 
@@ -312,8 +341,12 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			opts['label'] = self.graph.graph_vlabel.replace('${graph_period}', self.graph.graph_period or 'second')
 
 		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min > self.graph.graph_args_lower_limit):
-			opts['min'] = self.graph.graph_args_lower_limit
+			opts['graph_min'] = self.graph.graph_args_lower_limit
 		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max < self.graph.graph_args_upper_limit):
-			opts['max'] = self.graph.graph_args_upper_limit
+			opts['graph_max'] = self.graph.graph_args_upper_limit
+
+		any_stacked = any([dr.draw in ('STACK', 'AREASTACK') for dr in self.datarows])
+		opts['value_max'] = self._apply_graph_data_values_func(max, sum if any_stacked else max)
+		opts['value_min'] = self._apply_graph_data_values_func(min, sum if any_stacked else min)
 
 		return opts
