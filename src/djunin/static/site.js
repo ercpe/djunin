@@ -149,6 +149,9 @@ function render_graphs(container_id, url) {
 						}
 					});
 		});
+
+		// append zero line
+		svg.append("g").attr("class", "x axis zero").attr("transform", "translate(0," + yScale(0) + ")").call(xAxis.tickFormat("").tickSize(0));
 	});
 }
 
