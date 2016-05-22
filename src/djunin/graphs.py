@@ -340,13 +340,20 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		if self.graph.graph_vlabel:
 			opts['label'] = self.graph.graph_vlabel.replace('${graph_period}', self.graph.graph_period or 'second')
 
-		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min > self.graph.graph_args_lower_limit):
-			opts['graph_min'] = self.graph.graph_args_lower_limit
-		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max < self.graph.graph_args_upper_limit):
-			opts['graph_max'] = self.graph.graph_args_upper_limit
-
 		any_stacked = any([dr.draw in ('STACK', 'AREASTACK') for dr in self.datarows])
 		opts['value_max'] = self._apply_graph_data_values_func(max, sum if any_stacked else max)
 		opts['value_min'] = self._apply_graph_data_values_func(min, sum if any_stacked else min)
+
+		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min > self.graph.graph_args_lower_limit):
+			opts['graph_min'] = self.graph.graph_args_lower_limit
+		else:
+			any_area = any([dr.draw in ('AREA', 'STACK', 'AREASTACK') for dr in self.datarows])
+			if any_area:
+				datarows_min = list(self.datarows.exclude(min=None).values_list('min', flat=True))
+				if datarows_min:
+					opts['graph_min'] = min(datarows_min)
+
+		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max < self.graph.graph_args_upper_limit):
+			opts['graph_max'] = self.graph.graph_args_upper_limit
 
 		return opts
