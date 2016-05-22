@@ -6,26 +6,51 @@ function render_graphs(container_id, url) {
 
 	//if (debug && graph_scope != "day") return;
 
+	var numXAxisTicks = 5;
+	var numYAxisTicks = 5;
+
+	function xTicks(axis) {
+		var format = "";
+
+		var numTicks = numXAxisTicks;
+
+		switch (graph_scope) {
+			case "day":
+				format = d3.time.format("%H:%M");
+				break;
+			case "week":
+				format = d3.time.format("%d");
+				numTicks = 7;
+				break;
+			case "month":
+				format = d3.time.format("Week %U");
+				break;
+			case "year":
+				format = d3.time.format("%b");
+				numTicks = 12;
+				break;
+		}
+		axis.ticks(numTicks).tickFormat(format);
+		return axis;
+	}
+
 	var margin = {top: 20, right: 20, bottom: 30, left: 50},
     	width = container.width() - margin.left - margin.right,
     	height = container.height() - margin.top - margin.bottom;
 
 	var color = d3.scale.category20();
 
-	var xAxisTicks = 5;
-	var yAxisTicks = 5
-
 	var xScale = d3.time.scale().range([0, width]);
 	var xAxis = d3.svg.axis().scale(xScale)
 					.orient("bottom")
-					.innerTickSize(-height)
-					.ticks(xAxisTicks).tickFormat(graph_scope == "day" ? d3.time.format("%H:%M") : d3.time.format("%b %d"));
+					.innerTickSize(-height);
+	xAxis = xTicks(xAxis);
 
 	var yScale = d3.scale.linear().range([height, 0]);
 	var yAxis = d3.svg.axis().scale(yScale)
 					.orient("left")
 					.innerTickSize(-width)
-					.ticks(yAxisTicks).tickFormat(d3.format("s"));
+					.ticks(numYAxisTicks).tickFormat(d3.format("s"));
 
 	var line = d3.svg.line().interpolate("basis")
 		.defined(function(d) { return d.value != null; }) // makes null values a gap
@@ -100,7 +125,7 @@ function render_graphs(container_id, url) {
 		if (y_min == 0 && y_max == 0) y_max = 1;
 		if (y_min == y_max) y_min = 0;
 		debug && console.log("min: " + y_min + ", max: " + y_max);
-		yScale.domain([y_min, y_max]).nice(yAxisTicks);
+		yScale.domain([y_min, y_max]).nice(numYAxisTicks);
 
 		// set the domain for the x axis to the dates
 		xScale.domain(d3.extent(response.values, function(d) { return d.date; }));
