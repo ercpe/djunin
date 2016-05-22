@@ -146,9 +146,28 @@ a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom:
 .graph-title { text-align: center; }
 
 .djunin-graph { height: 240px; }
+/*
 .djunin-graph-legend { margin-bottom: 30px; margin-right: 15px; }
 .djunin-graph-legend tr:nth-child(1):hover { background-color: transparent; }
 .djunin-graph-legend tr:hover { background-color: #f9f9f9; }
+*/
+
+.djunin-graph-legend {
+	margin-left: 50px;
+	margin-bottom: 30px;
+}
+
+.djunin-graph-legend td:first-child {
+	width: 10px;
+}
+
+.djunin-graph-legend .color {
+	width: 0.85em;  /* matches the font-size:85% of <small> */
+	height: 0.85em;
+	display: inline-block;
+	margin-right: 5px;
+}
+
 .datarow-min,
 .datarow-max,
 .datarow-current { text-align: right; padding-right: 0px; }

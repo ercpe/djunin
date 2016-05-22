@@ -325,6 +325,8 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				'min': dr.min,
 				'max': dr.max,
 				'draw': dr.draw,
+				'label': dr.label,
+				'info': dr.info,
 			}
 
 			if dr.negative:
@@ -333,7 +335,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			if dr.colour:
 				d['color'] = '#%s' % dr.colour
 
-			datarows[dr.name] = d
+			datarows[dr.name] = dict(((k, v) for k, v in d.items() if v))
 
 		return datarows
 

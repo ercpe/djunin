@@ -88,6 +88,10 @@ function render_graphs(container_id, url) {
 			elem.date = new Date(elem[0]);
 		});
 
+		function getColor(d) {
+			return d.color || color(response.datarows[d.name].sameas || d.name)
+		}
+
 		// build a color map for our datarows
 		color.domain(Object.keys(response.datarows));
 
@@ -165,10 +169,6 @@ function render_graphs(container_id, url) {
 					.each(function(d) {
 						//console.log(d.name + ": " + d.draw)
 
-						function getColor(d) {
-							return d.color || color(response.datarows[d.name].sameas || d.name)
-						}
-
 						if (d.draw == 'AREA' || d.draw == 'AREASTACK' || d.draw == 'STACK') {
 							d3.select(this)
 								.attr("class", "area")
@@ -186,6 +186,23 @@ function render_graphs(container_id, url) {
 
 		// append zero line
 		svg.append("g").attr("class", "x axis zero").attr("transform", "translate(0," + yScale(0) + ")").call(xAxis.tickFormat("").tickSize(0));
+
+		// insert makeshift legend
+		var legend_container = $('#' + $(container).attr('id') + "-legend");
+		var legend = $('<table class="legend">')
+		$.each([stacked_datarows, unstacked_datarows], function(idx, data) {
+			$.each(data, function(j, dr) {
+				var label = response.datarows[dr.name].label || dr.name;
+				var tr = $('<tr></tr>')
+							.append($('<td></td>').append($('<span class="color" style="background-color: ' +  getColor(dr) + '"></span>')))
+							.append($('<td></td>')
+										.append($('<small></small>').text(label))
+										.attr('title', response.datarows[dr.name].info || label)
+							);
+				legend.append(tr);
+			});
+		});
+		$(legend_container).append(legend);
 	});
 }
 
