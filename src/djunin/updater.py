@@ -195,6 +195,10 @@ class Updater(object):
 					dropts['do_graph'] = dropts['graph']
 					del dropts['graph']
 
+				# set empty values to None
+				for k in dropts.keys():
+					dropts[k] = (dropts[k] or '').strip() or None
+
 				dr = DataRow(graph=graph, name=datarow_name,
 							 rrdfile=self.get_rrdfilename(graph, datarow_name, dropts),
 							 **dropts)
