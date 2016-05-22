@@ -192,6 +192,8 @@ function render_graphs(container_id, url) {
 		var legend = $('<table class="legend">')
 		$.each([stacked_datarows, unstacked_datarows], function(idx, data) {
 			$.each(data, function(j, dr) {
+				if (response.datarows[dr.name].sameas) return;
+
 				var label = response.datarows[dr.name].label || dr.name;
 				var tr = $('<tr></tr>')
 							.append($('<td></td>').append($('<span class="color" style="background-color: ' +  getColor(dr) + '"></span>')))
