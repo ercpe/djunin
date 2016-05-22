@@ -43,13 +43,16 @@ function render_graphs(container_id, url) {
 	var xScale = d3.time.scale().range([0, width]);
 	var xAxis = d3.svg.axis().scale(xScale)
 					.orient("bottom")
-					.innerTickSize(-height);
+					.innerTickSize(-height)
+					.outerTickSize(0) // remove tick marker at min/max
+					;
 	xAxis = xTicks(xAxis);
 
 	var yScale = d3.scale.linear().range([height, 0]);
 	var yAxis = d3.svg.axis().scale(yScale)
 					.orient("left")
 					.innerTickSize(-width)
+					.outerTickSize(0)  // remove tick marker at min/max
 					.ticks(numYAxisTicks).tickFormat(d3.format("s"));
 
 	var line = d3.svg.line().interpolate("basis")
