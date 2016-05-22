@@ -104,7 +104,8 @@ function render_graphs(container_id, url) {
 						y: row[1][name], // required for stacking
 					}
 				}),
-				draw: response.datarows[name].draw
+				draw: response.datarows[name].draw,
+				color: response.datarows[name].color,
 			};
 
 			if (o.draw == "AREASTACK" || o.draw == "STACK") {
@@ -163,17 +164,22 @@ function render_graphs(container_id, url) {
 					.append("path")
 					.each(function(d) {
 						//console.log(d.name + ": " + d.draw)
+
+						function getColor(d) {
+							return d.color || color(response.datarows[d.name].sameas || d.name)
+						}
+
 						if (d.draw == 'AREA' || d.draw == 'AREASTACK' || d.draw == 'STACK') {
 							d3.select(this)
 								.attr("class", "area")
 								.attr("d", function(d) { return area(d.values); })
-								.style("fill", function(d) { return color(response.datarows[d.name].sameas || d.name); })
+								.style("fill", getColor)
 								.style("opacity", '0.7');
 						} else {
 							d3.select(this)
 								.attr("class", "line")
 								.attr("d", function(d) { return line(d.values); })
-								.style("stroke", function(d) { return color(response.datarows[d.name].sameas || d.name); })
+								.style("stroke", getColor)
 						}
 					});
 		});

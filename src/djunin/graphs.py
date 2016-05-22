@@ -330,6 +330,9 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			if dr.negative:
 				d['sameas'] = dr.negative
 
+			if dr.colour:
+				d['color'] = '#%s' % dr.colour
+
 			datarows[dr.name] = d
 
 		return datarows
