@@ -131,6 +131,21 @@ function render_graphs(container_id, url) {
 			}
 		});
 
+		if (stacked_datarows.length) {
+			// if there is at lease on stackable datarow, move all AREA datarow from
+			// unstacked to stacked
+			unstacked_datarows = $.grep(unstacked_datarows, function(dr, idx) {
+				var keep = dr.draw != 'AREA';
+
+				if (!keep) {
+					stacked_datarows.push(dr);
+				}
+
+				return keep;
+			});
+		}
+
+
 		if (debug) {
 			console.log("unstacked:");
 			console.log(unstacked_datarows);
