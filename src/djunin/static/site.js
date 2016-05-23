@@ -34,7 +34,7 @@ function render_graphs(container_id, url) {
 		return axis;
 	}
 
-	var margin = {top: 20, right: 20, bottom: 30, left: 50},
+	var margin = {top: 20, right: 0, bottom: 30, left: 50},
     	width = container.width() - margin.left - margin.right,
     	height = container.height() - margin.top - margin.bottom;
 
@@ -49,11 +49,12 @@ function render_graphs(container_id, url) {
 	xAxis = xTicks(xAxis);
 
 	var yScale = d3.scale.linear().range([height, 0]);
+	var yAxisTickFormat = d3.format("s");
 	var yAxis = d3.svg.axis().scale(yScale)
 					.orient("left")
 					.innerTickSize(-width)
 					.outerTickSize(0)  // remove tick marker at min/max
-					.ticks(numYAxisTicks).tickFormat(d3.format("s"));
+					.ticks(numYAxisTicks).tickFormat(yAxisTickFormat);
 
 	var line = d3.svg.line().interpolate("basis")
 		.defined(function(d) { return d.value != null; }) // makes null values a gap
@@ -73,6 +74,8 @@ function render_graphs(container_id, url) {
 			debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
 			return yScale((d.y0 || 0) + d.value);
 		});
+
+	var legendFormat = d3.format('.2s')
 
 	var stack = d3.layout.stack().values(function(d) { return d.values; });
 
@@ -189,18 +192,23 @@ function render_graphs(container_id, url) {
 
 		// insert makeshift legend
 		var legend_container = $('#' + $(container).attr('id') + "-legend");
-		var legend = $('<table class="legend">')
+		var legend = $('<table class="table table-condensed legend">')
+		legend.append($('<tr><th colspan="2"></th><th>Min</th><th>Max</th><th>Current</th></tr>'));
 		$.each([stacked_datarows, unstacked_datarows], function(idx, data) {
 			$.each(data, function(j, dr) {
-				if (response.datarows[dr.name].sameas) return;
+				var config = response.datarows[dr.name];
+				if (config.sameas) return;
 
-				var label = response.datarows[dr.name].label || dr.name;
+				var label = config.label || dr.name;
 				var tr = $('<tr></tr>')
 							.append($('<td></td>').append($('<span class="color" style="background-color: ' +  getColor(dr) + '"></span>')))
-							.append($('<td></td>')
-										.append($('<small></small>').text(label))
-										.attr('title', response.datarows[dr.name].info || label)
-							);
+							.append($('<td class="small"></td>')
+										.text(label)
+										.attr('title', config.info || label)
+							)
+							.append($('<td class="small"></td>').text(config.value_min ? legendFormat(config.value_min) : '-'))
+							.append($('<td class="small"></td>').text(config.value_max ? legendFormat(config.value_max) : '-'))
+							.append($('<td class="small"></td>').text(config.value_current ? legendFormat(config.value_current) : '-'));
 				legend.append(tr);
 			});
 		});

@@ -201,6 +201,11 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			if dr.colour:
 				d['color'] = '#%s' % dr.colour
 
+			datarow_values = [v[dr.name] for t, v in self.raw_data.items() if v.get(dr.name, None) is not None]
+			d['value_min'] = round(min(datarow_values), 2) if datarow_values else None
+			d['value_max'] = round(max(datarow_values), 2) if datarow_values else None
+			d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
+
 			datarows[dr.name] = dict(((k, v) for k, v in d.items() if v))
 
 		return datarows
