@@ -205,6 +205,7 @@ function render_graphs(container_id, url) {
 						} else {
 							d3.select(this)
 								.attr("class", "line")
+								.attr('data-datarow', d.name)
 								.attr("d", function(d) { return line(d.values); })
 								.style("stroke", getColor)
 						}
@@ -225,6 +226,7 @@ function render_graphs(container_id, url) {
 
 				var label = config.label || dr.name;
 				var tr = $('<tr></tr>')
+							.attr('data-datarow', dr.name)
 							.append($('<td></td>').append($('<span class="color" style="background-color: ' +  getColor(dr) + '"></span>')))
 							.append($('<td class="small"></td>')
 										.text(label)
@@ -233,6 +235,17 @@ function render_graphs(container_id, url) {
 							.append($('<td class="small"></td>').text(config.value_min ? legendFormat(config.value_min) : '-'))
 							.append($('<td class="small"></td>').text(config.value_max ? legendFormat(config.value_max) : '-'))
 							.append($('<td class="small"></td>').text(config.value_current ? legendFormat(config.value_current) : '-'));
+				tr.hover(function() {
+					var name = $(this).data('datarow');
+					$('svg path[data-datarow=' + name + ']', $(container)).addClass('highlighted');
+					var other = response.datarows[name].sameas;
+					if (!other) {
+						var output = $.grep(Object.keys(response.datarows), function(dr_name, idx) { return response.datarows[dr_name].sameas == name; });
+						if (output.length) $('svg path[data-datarow=' + other + ']', $(container)).addClass('highlighted');
+					}
+				}, function() {
+					$('svg path', $(container)).removeClass('highlighted');
+				});
 				legend.append(tr);
 			});
 		});

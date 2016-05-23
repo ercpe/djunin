@@ -222,3 +222,5 @@ g.y .tick line {
   stroke: steelblue;
   stroke-width: 1.5px;
 }
+
+path.highlighted { stroke-width: 2; }
