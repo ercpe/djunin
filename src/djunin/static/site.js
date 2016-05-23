@@ -86,6 +86,15 @@ function render_graphs(container_id, url) {
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	$.get(url, function(response) {
+
+		if (!response.values.length) {
+			$(container).parent().append($('<div class="alert alert-info">This graph has no data</div>'));
+			$('.djunin-graph', $(container).parent()).remove();
+			$('.djunin-graph-legend', $(container).parent()).remove();
+
+			return;
+		}
+
 		// translate into domain objects
 		$.each(response.values, function(idx, elem) {
 			elem.date = new Date(elem[0]);
