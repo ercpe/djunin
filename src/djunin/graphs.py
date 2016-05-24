@@ -245,7 +245,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 
 		logger.info("Value max: %s vs %s", opts['value_max'], self.datarows_max_value)
 
-		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min > self.graph.graph_args_lower_limit):
+		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min >= self.graph.graph_args_lower_limit):
 			opts['graph_min'] = self.graph.graph_args_lower_limit
 		else:
 			any_area = any([dr.draw in ('AREA', 'STACK', 'AREASTACK') for dr in self.datarows])
@@ -254,7 +254,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				if datarows_min:
 					opts['graph_min'] = min(datarows_min)
 
-		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max < self.graph.graph_args_upper_limit):
+		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max <= self.graph.graph_args_upper_limit):
 			opts['graph_max'] = self.graph.graph_args_upper_limit
 
 		return opts
