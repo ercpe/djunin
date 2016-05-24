@@ -38,4 +38,4 @@ work, ensure your TEMPLATE_CONTEXT_PROCESSORS setting includes\
 
 class ExceptionLoggingMiddleware(object):
 	def process_exception(self, request, exception):
-		logger.exception("Uncaught error %s for %s" % (exception, request.path), exception)
+		logger.exception("Uncaught error %s for %s", exception, request.path)
