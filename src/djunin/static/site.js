@@ -189,15 +189,13 @@ function render_graphs(container_id, url) {
 
 		// manipulate the datarows in the graph
 		$.each([stack(stacked_datarows), unstacked_datarows], function(idx, data) {
-			svg.selectAll(".datarow")
+			svg.selectAll(".datarow-" + idx)
 				.data(data)
 				.enter()
 					.append("g")
-					.attr("class", "datarow")
+					.attr("class", "datarow-" + idx)
 					.append("path")
 					.each(function(d) {
-						//console.log(d.name + ": " + d.draw)
-
 						if (d.draw == 'AREA' || d.draw == 'AREASTACK' || d.draw == 'STACK') {
 							d3.select(this)
 								.attr("class", "area")
