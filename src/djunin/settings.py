@@ -53,6 +53,7 @@ MIDDLEWARE_CLASSES = (
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django.middleware.security.SecurityMiddleware',
 	'djunin.middleware.LoginRequiredMiddleware',
+	'djunin.middleware.ExceptionLoggingMiddleware',
 )
 
 ROOT_URLCONF = 'djunin.urls'

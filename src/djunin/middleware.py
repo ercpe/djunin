@@ -3,13 +3,16 @@
 from django.http import HttpResponseRedirect
 from django.conf import settings
 from re import compile
+import logging
+
+logger = logging.getLogger(__name__)
 
 EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/'))]
 if hasattr(settings, 'LOGIN_EXEMPT_URLS'):
 	EXEMPT_URLS += [compile(expr) for expr in settings.LOGIN_EXEMPT_URLS]
 
-# see: http://onecreativeblog.com/post/59051248/django-login-required-middleware
 
+# see: http://onecreativeblog.com/post/59051248/django-login-required-middleware
 class LoginRequiredMiddleware:
 	"""
 	Middleware that requires a user to be authenticated to view any page other
@@ -31,3 +34,8 @@ work, ensure your TEMPLATE_CONTEXT_PROCESSORS setting includes\
 			path = request.path_info.lstrip('/')
 			if not any(m.match(path) for m in EXEMPT_URLS):
 				return HttpResponseRedirect(settings.LOGIN_URL + '?next=%s' % request.path_info)
+
+
+class ExceptionLoggingMiddleware(object):
+	def process_exception(self, request, exception):
+		logger.exception("Uncaught error %s for %s" % (exception, request.path), exception)
