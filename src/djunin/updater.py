@@ -156,11 +156,12 @@ class Updater(object):
 		# group.node.graph.subgraph.datarow.attribute = value
 
 		subgraph_filter = lambda row: row.subgraph is not None and row.datarow is None
-		subgraph_grouped = itertools.groupby(filter(subgraph_filter, data), lambda row: (row.group, row.node, row.graph, row.subgraph))
+		subgraph_grouped = itertools.groupby(sorted(filter(subgraph_filter, data)), lambda row: (row.group, row.node, row.graph, row.subgraph))
 
 		def _build_subgraphs():
 			for group_key, items in subgraph_grouped:
 				group, node, root_graph_name, graph_name = group_key
+
 				g = Graph(node=self.nodes[(group, node)],
 						  parent=self.graphs[(group, node, root_graph_name)],
 						  name=graph_name)
@@ -171,13 +172,14 @@ class Updater(object):
 					if key == 'graph_args' and value:
 						for k, v in self.parse_graph_args(value).items():
 							setattr(g, k, v)
+
 				yield g
 
 		Graph.objects.bulk_create(_build_subgraphs())
 
 	def create_datarows(self, data):
 		datarow_filter = lambda row: row.datarow is not None
-		datarow_grouped = itertools.groupby(filter(datarow_filter, data), lambda row: (row.group, row.node, row.graph, row.subgraph, row.datarow))
+		datarow_grouped = itertools.groupby(sorted(filter(datarow_filter, data)), lambda row: (row.group, row.node, row.graph, row.subgraph, row.datarow))
 
 		def _build_datarows():
 			for group_key, items in datarow_grouped:
@@ -202,7 +204,6 @@ class Updater(object):
 				dr = DataRow(graph=graph, name=datarow_name,
 							 rrdfile=self.get_rrdfilename(graph, datarow_name, dropts),
 							 **dropts)
-
 				yield dr
 
 		DataRow.objects.bulk_create(_build_datarows())
