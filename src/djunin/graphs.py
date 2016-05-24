@@ -152,7 +152,8 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				if other_values:
 					max_values.append(sum(other_values))
 
-			self._datarow_max_value = max(max_values)
+			if max_values:
+				self._datarow_max_value = max(max_values)
 
 		return self._datarow_max_value
 
