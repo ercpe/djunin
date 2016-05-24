@@ -47,8 +47,6 @@ class Graph(ModelBase):
 	graph_width = models.IntegerField(null=True)
 
 	def __str__(self):
-		if self.parent:
-			return "%s/%s" % (self.parent, self.name)
 		return self.graph_title or self.name
 
 	class Meta(ModelBase.Meta):
