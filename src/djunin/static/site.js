@@ -64,14 +64,14 @@ function render_graphs(container_id, url) {
 	var area = d3.svg.area()
 		.defined(function(d) { return d.value != null; }) // makes null values a gap
 		.x(function(d) {
-			debug && console.log("X: " + xScale(d.date));
+			//debug && console.log("X: " + xScale(d.date));
 			return xScale(d.date); })
 		.y0(function(d) {
-			debug && console.log(d.name + ": y0: " + d.y0)
+			//debug && console.log(d.name + ": y0: " + d.y0)
 			return yScale(d.y0 || 0)
 		})
 		.y1(function(d) {
-			debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
+			//debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
 			return yScale((d.y0 || 0) + d.value);
 		});
 
@@ -156,7 +156,9 @@ function render_graphs(container_id, url) {
 		}
 
 		y_min = typeof response.yaxis.graph_min == "undefined" ? response.yaxis.value_min : response.yaxis.graph_min;
-		y_max = response.yaxis.graph_max || response.yaxis.value_max;
+		y_max = response.yaxis.graph_max && response.yaxis.value_max ?
+				Math.max(response.yaxis.graph_max, response.yaxis.value_max) :
+				(response.yaxis.graph_max || response.yaxis.value_max);
 		if (y_min == 0 && y_max == 0) y_max = 1;
 		if (y_min == y_max) y_min = 0;
 		debug && console.log("min: " + y_min + ", max: " + y_max);

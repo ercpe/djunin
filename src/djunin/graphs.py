@@ -107,13 +107,16 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		super(D3GraphDataGenerator, self).__init__(*args, **kwargs)
 		self._y_min = None
 		self._y_max = None
+		self._datarow_max_value = None
+		self._datarow_min_value = None
 		self._graph_data = None
+		self._datarow_options = None
 		self._invert_datarow_names = None
 
 	def generate(self):
 		return {
+			'datarows': self.datarows_options,
 			'yaxis': self.yaxis_opts(),
-			'datarows': self.get_datarows_options(),
 			'values': self.graph_data,
 		}, self._start, self._end, self._resolution
 
@@ -134,6 +137,24 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		if self._y_max is None:
 			self._y_max = max([max(v.values()) for _, v in self.graph_data])
 		return self._y_max
+
+	@property
+	def datarows_max_value(self):
+		if self._datarow_max_value is None:
+			max_values = []
+
+			line_datarows = [k for k, v in self.datarows_options.items() if v['draw'] in ('LINE2')]
+			for _, datarow_values in self.graph_data:
+				line_values = [v for k, v in datarow_values.items() if k in line_datarows and v is not None]
+				if line_values:
+					max_values.append(max(line_values))
+				other_values = [v for k, v in datarow_values.items() if k not in line_datarows and v is not None]
+				if other_values:
+					max_values.append(sum(other_values))
+
+			self._datarow_max_value = max(max_values)
+
+		return self._datarow_max_value
 
 	@property
 	def invert_datarow_names(self):
@@ -181,34 +202,36 @@ class D3GraphDataGenerator(GraphDataGenerator):
 
 		return list(_inner())
 
-	def get_datarows_options(self):
-		all_datarows = self.datarows.filter(do_graph=True)
+	@property
+	def datarows_options(self):
+		if self._datarow_options is None:
+			all_datarows = self.datarows.filter(do_graph=True)
 
-		datarows = {}
+			self._datarow_options = {}
 
-		for dr in all_datarows:
-			d = {
-				'min': dr.min,
-				'max': dr.max,
-				'draw': dr.draw,
-				'label': dr.label,
-				'info': dr.info,
-			}
+			for dr in all_datarows:
+				d = {
+					'min': dr.min,
+					'max': dr.max,
+					'draw': dr.draw or 'LINE2',
+					'label': dr.label,
+					'info': dr.info,
+				}
 
-			if dr.negative:
-				d['sameas'] = dr.negative
+				if dr.negative:
+					d['sameas'] = dr.negative
 
-			if dr.colour:
-				d['color'] = '#%s' % dr.colour
+				if dr.colour:
+					d['color'] = '#%s' % dr.colour
 
-			datarow_values = [v[dr.name] for t, v in self.raw_data.items() if v.get(dr.name, None) is not None]
-			d['value_min'] = round(min(datarow_values), 2) if datarow_values else None
-			d['value_max'] = round(max(datarow_values), 2) if datarow_values else None
-			d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
+				datarow_values = [v[dr.name] for t, v in self.raw_data.items() if v.get(dr.name, None) is not None]
+				d['value_min'] = round(min(datarow_values), 2) if datarow_values else None
+				d['value_max'] = round(max(datarow_values), 2) if datarow_values else None
+				d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
 
-			datarows[dr.name] = dict(((k, v) for k, v in d.items() if v))
+				self._datarow_options[dr.name] = dict(((k, v) for k, v in d.items() if v))
 
-		return datarows
+		return self._datarow_options
 
 	def yaxis_opts(self):
 		opts = {}
@@ -217,8 +240,10 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			opts['label'] = self.graph.graph_vlabel.replace('${graph_period}', self.graph.graph_period or 'second')
 
 		any_stacked = any([dr.draw in ('STACK', 'AREASTACK') for dr in self.datarows])
-		opts['value_max'] = self._apply_graph_data_values_func(max, sum if any_stacked else max)
+		opts['value_max'] = self.datarows_max_value # self._apply_graph_data_values_func(max, sum if any_stacked else max)
 		opts['value_min'] = self._apply_graph_data_values_func(min, sum if any_stacked else min)
+
+		logger.info("Value max: %s vs %s", opts['value_max'], self.datarows_max_value)
 
 		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min > self.graph.graph_args_lower_limit):
 			opts['graph_min'] = self.graph.graph_args_lower_limit
