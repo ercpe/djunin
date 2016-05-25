@@ -208,7 +208,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		if self._datarow_options is None:
 			all_datarows = self.datarows.filter(do_graph=True)
 
-			self._datarow_options = {}
+			opts = {}
 
 			for dr in all_datarows:
 				d = {
@@ -230,7 +230,15 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				d['value_max'] = round(max(datarow_values), 2) if datarow_values else None
 				d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
 
-				self._datarow_options[dr.name] = dict(((k, v) for k, v in d.items() if v))
+				opts[dr.name] = dict(((k, v) for k, v in d.items() if v))
+
+			# get the graph datarow order
+			order_names = [x.strip() for x in (self.graph.graph_order or '').split()]
+			# add all missing datarow names to the end of the list
+			order_names.extend(set(opts.keys()) - set(order_names))
+
+			# create sorted dict according to the order
+			self._datarow_options = OrderedDict(sorted(opts.items(), cmp=lambda a, b: cmp(order_names.index(a[0]), order_names.index(b[0]))))
 
 		return self._datarow_options
 
