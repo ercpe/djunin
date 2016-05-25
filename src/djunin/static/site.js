@@ -1,99 +1,99 @@
 function render_graphs(container_id, url) {
-	var container = $('#' + container_id)
-	var graph_scope = container.data('graph-scope');
+//	var container = $('#' + container_id)
+//	var graph_scope = container.data('graph-scope');
+//
+//	var debug = false;
+//
+//	//if (debug && graph_scope != "day") return;
+//
+//	var numXAxisTicks = 5;
+//	var numYAxisTicks = 5;
 
-	var debug = false;
+//	function xTicks(axis) {
+//		var format = "";
+//
+//		var numTicks = numXAxisTicks;
+//
+//		switch (graph_scope) {
+//			case "day":
+//				format = d3.time.format("%H:%M");
+//				break;
+//			case "week":
+//				format = d3.time.format("%d");
+//				numTicks = 7;
+//				break;
+//			case "month":
+//				format = d3.time.format("Week %U");
+//				break;
+//			case "year":
+//				format = d3.time.format("%b");
+//				numTicks = 12;
+//				break;
+//		}
+//		axis.ticks(numTicks).tickFormat(format);
+//		return axis;
+//	}
 
-	//if (debug && graph_scope != "day") return;
+//	var margin = {top: 20, right: 0, bottom: 30, left: 50},
+//    	width = container.width() - margin.left - margin.right,
+//    	height = container.height() - margin.top - margin.bottom;
 
-	var numXAxisTicks = 5;
-	var numYAxisTicks = 5;
+//	var color = d3.scale.category20();
 
-	function xTicks(axis) {
-		var format = "";
+//	var xScale = d3.time.scale().range([0, width]);
+//	var xAxis = d3.svg.axis().scale(xScale)
+//					.orient("bottom")
+//					.innerTickSize(-height)
+//					.outerTickSize(0) // remove tick marker at min/max
+//					;
+//	xAxis = xTicks(xAxis);
 
-		var numTicks = numXAxisTicks;
+//	var yScale = d3.scale.linear().range([height, 0]);
+//	var yAxisTickFormat = d3.format("s");
+//	var yAxis = d3.svg.axis().scale(yScale)
+//					.orient("left")
+//					.innerTickSize(-width)
+//					.outerTickSize(0)  // remove tick marker at min/max
+//					.ticks(numYAxisTicks).tickFormat(yAxisTickFormat);
+//
+//	var line = d3.svg.line().interpolate("basis")
+//		.defined(function(d) { return d.value != null; }) // makes null values a gap
+//		.x(function(d) { return xScale(d.date); })
+//		.y(function(d) { return yScale(d.value); });
 
-		switch (graph_scope) {
-			case "day":
-				format = d3.time.format("%H:%M");
-				break;
-			case "week":
-				format = d3.time.format("%d");
-				numTicks = 7;
-				break;
-			case "month":
-				format = d3.time.format("Week %U");
-				break;
-			case "year":
-				format = d3.time.format("%b");
-				numTicks = 12;
-				break;
-		}
-		axis.ticks(numTicks).tickFormat(format);
-		return axis;
-	}
+//	var area = d3.svg.area()
+//		.defined(function(d) { return d.value != null; }) // makes null values a gap
+//		.x(function(d) {
+//			//debug && console.log("X: " + xScale(d.date));
+//			return xScale(d.date); })
+//		.y0(function(d) {
+//			//debug && console.log(d.name + ": y0: " + d.y0)
+//			return yScale(d.y0 || 0)
+//		})
+//		.y1(function(d) {
+//			//debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
+//			return yScale((d.y0 || 0) + d.value);
+//		});
 
-	var margin = {top: 20, right: 0, bottom: 30, left: 50},
-    	width = container.width() - margin.left - margin.right,
-    	height = container.height() - margin.top - margin.bottom;
+//	var legendFormat = d3.format('.2s')
 
-	var color = d3.scale.category20();
+//	var stack = d3.layout.stack().values(function(d) { return d.values; });
 
-	var xScale = d3.time.scale().range([0, width]);
-	var xAxis = d3.svg.axis().scale(xScale)
-					.orient("bottom")
-					.innerTickSize(-height)
-					.outerTickSize(0) // remove tick marker at min/max
-					;
-	xAxis = xTicks(xAxis);
-
-	var yScale = d3.scale.linear().range([height, 0]);
-	var yAxisTickFormat = d3.format("s");
-	var yAxis = d3.svg.axis().scale(yScale)
-					.orient("left")
-					.innerTickSize(-width)
-					.outerTickSize(0)  // remove tick marker at min/max
-					.ticks(numYAxisTicks).tickFormat(yAxisTickFormat);
-
-	var line = d3.svg.line().interpolate("basis")
-		.defined(function(d) { return d.value != null; }) // makes null values a gap
-		.x(function(d) { return xScale(d.date); })
-		.y(function(d) { return yScale(d.value); });
-
-	var area = d3.svg.area()
-		.defined(function(d) { return d.value != null; }) // makes null values a gap
-		.x(function(d) {
-			//debug && console.log("X: " + xScale(d.date));
-			return xScale(d.date); })
-		.y0(function(d) {
-			//debug && console.log(d.name + ": y0: " + d.y0)
-			return yScale(d.y0 || 0)
-		})
-		.y1(function(d) {
-			//debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
-			return yScale((d.y0 || 0) + d.value);
-		});
-
-	var legendFormat = d3.format('.2s')
-
-	var stack = d3.layout.stack().values(function(d) { return d.values; });
-
-	var svg = d3.select('#' + container_id).append("svg")
-			.attr("width", width + margin.left + margin.right)
-			.attr("height", height + margin.top + margin.bottom)
-		.append("g")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+//	var svg = d3.select('#' + container_id).append("svg")
+//			.attr("width", width + margin.left + margin.right)
+//			.attr("height", height + margin.top + margin.bottom)
+//		.append("g")
+//			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	$.get(url, function(response) {
 
-		if (!response.values.length) {
-			$(container).parent().append($('<div class="alert alert-info">This graph has no data</div>'));
-			$('.djunin-graph', $(container).parent()).remove();
-			$('.djunin-graph-legend', $(container).parent()).remove();
-
-			return;
-		}
+//		if (!response.values.length) {
+//			$(container).parent().append($('<div class="alert alert-info">This graph has no data</div>'));
+//			$('.djunin-graph', $(container).parent()).remove();
+//			$('.djunin-graph-legend', $(container).parent()).remove();
+//
+//			return;
+//		}
 
 		// translate into domain objects
 		$.each(response.values, function(idx, elem) {
@@ -253,17 +253,132 @@ function render_graphs(container_id, url) {
 	});
 }
 
-function draw_graphs() {
-	$('.djunin-graph:visible').each(function(i, elem) {
-		var url = $(elem).data('url');
-		if (url) {
-			render_graphs(elem.id, url);
+function DjuninGraph(container_id, url) {
+	this.container_id = container_id;
+	this.container = $(container_id);
+	this.url = url;
+	this.scope = this.container.data('graph-scope');
+
+	this.margin = {top: 20, right: 0, bottom: 30, left: 50};
+	this.width = this.container.width() - this.margin.left - this.margin.right;
+    this.height = this.container.height() - this.margin.top - this.margin.bottom;
+
+	this.numXAxisTicks = 5;
+	this.numYAxisTicks = 5;
+
+	this.debug_mode = true;
+
+	this.debug = function(s) {
+		if (this.debug_mode) console.log(s);
+	}
+
+	this.color = d3.scale.category20();
+
+	// time scale over the whole width of our area
+	this.xScale = d3.time.scale().range([0, this.width]);
+
+	// x axis definition
+	this.xAxis = d3.svg.axis().scale(this.xScale).orient("bottom").innerTickSize(-this.height)
+					.outerTickSize(0); // remove tick marker at min/max
+
+	function xTicks(axis) {
+		var format = "";
+		var numTicks = this.numXAxisTicks;
+
+		switch (this.graph_scope) {
+			case "day":
+				format = d3.time.format("%H:%M");
+				break;
+			case "week":
+				format = d3.time.format("%d");
+				numTicks = 7;
+				break;
+			case "month":
+				format = d3.time.format("Week %U");
+				break;
+			case "year":
+				format = d3.time.format("%b");
+				numTicks = 12;
+				break;
 		}
-	});
+		axis.ticks(numTicks).tickFormat(format);
+		return axis;
+	}
+	this.xAxis = xTicks(this.xAxis); // fixme
+
+	// linear scale over the complete height
+	this.yScale = d3.scale.linear().range([this.height, 0]);
+
+	// SI unit format for y axis. TODO: Is this always good?
+	this.yAxisTickFormat = d3.format("s");
+
+	// y axis definition
+	this.yAxis = d3.svg.axis().scale(this.yScale)
+					.orient("left")
+					.innerTickSize(-this.width)
+					.outerTickSize(0)  // remove tick marker at min/max
+					.ticks(this.numYAxisTicks).tickFormat(this.yAxisTickFormat);
+
+	// definition for every line in our graphs
+	this.line = d3.svg.line().interpolate("basis")
+		.defined(function(d) { return d.value != null; }) // makes null values a gap
+		.x(function(d) { return this.xScale(d.date); }) // convert all values for x and y in our data to a px value in our svg
+		.y(function(d) { return this.yScale(d.value); });
+
+	// definition for areas in our graphs
+	this.area = d3.svg.area()
+		.defined(function(d) { return d.value != null; }) // makes null values a gap
+		.x(function(d) {
+			//debug && console.log("X: " + xScale(d.date));
+			return this.xScale(d.date);
+		})
+		.y0(function(d) {
+			//debug && console.log(d.name + ": y0: " + d.y0)
+			return this.yScale(d.y0 || 0)
+		})
+		.y1(function(d) {
+			//debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
+			return this.yScale((d.y0 || 0) + d.value);
+		});
+
+	// format for items in the legend table. .2 means two decimal points
+	this.legendFormat = d3.format('.2s')
+
+	// stack layout definition
+	this.stack = d3.layout.stack().values(function(d) { return d.values; });
+
+	this.render = function() {
+		this.debug("Rendering " + this.scope + " in " + this.container + " with data from " + this.url);
+
+		// create svg object
+		this.svg = d3
+					.select(this.container_id)
+					.append("svg")
+						.attr("width", this.width + this.margin.left + this.margin.right)
+						.attr("height", this.height + this.margin.top + this.margin.bottom)
+					.append("g")
+						.attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")"); // translate every coordinate into the inner area
+
+		// fetch data from server
+		$.ajax({
+			url: this.url,
+			context: this,
+			complete: this.render_graph
+		});
+	}
+
+	this.render_graph = function(response) {
+		// bail out if response contains no data
+		if (true || !response.values.length) {
+			this.container.parent().append($('<div class="alert alert-info">This graph has no data</div>'));
+			$('.djunin-graph', this.container.parent()).remove();
+			$('.djunin-graph-legend', this.container.parent()).remove();
+			return;
+		}
+	}
 }
 
 $(document).ready(function () {
-	draw_graphs();
 
 	$('#site-search').autocomplete({
 		serviceUrl: $('#site-search').data('url'),
@@ -274,4 +389,11 @@ $(document).ready(function () {
 		}
 	});
 
+	$('.djunin-graph:visible').each(function(i, elem) {
+		var url = $(elem).data('url');
+		if (url) {
+			var g = new DjuninGraph('#' + elem.id, url);
+			g.render();
+		}
+	});
 });
