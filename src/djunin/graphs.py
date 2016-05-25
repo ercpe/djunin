@@ -244,7 +244,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		opts['value_max'] = self.datarows_max_value # self._apply_graph_data_values_func(max, sum if any_stacked else max)
 		opts['value_min'] = self._apply_graph_data_values_func(min, sum if any_stacked else min)
 
-		logger.info("Value max: %s vs %s", opts['value_max'], self.datarows_max_value)
+		#logger.info("Value max: %s vs %s", opts['value_max'], self.datarows_max_value)
 
 		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min >= self.graph.graph_args_lower_limit):
 			opts['graph_min'] = self.graph.graph_args_lower_limit
