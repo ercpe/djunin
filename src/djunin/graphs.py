@@ -75,9 +75,9 @@ class GraphDataGenerator(object):
 
 			date_range = ""
 			if self.data_scope == SCOPE_DAY:
-				date_range = "-s -28h"
+				date_range = "-s -34h"
 			elif self.data_scope == SCOPE_WEEK:
-				date_range = "-s -176h"
+				date_range = "-s -200h"
 			elif self.data_scope == SCOPE_MONTH:
 				date_range = "-s -756h"
 			elif self.data_scope == SCOPE_YEAR:
