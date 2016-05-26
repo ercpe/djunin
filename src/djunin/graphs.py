@@ -244,8 +244,6 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		opts['value_max'] = self.datarows_max_value # self._apply_graph_data_values_func(max, sum if any_stacked else max)
 		opts['value_min'] = self._apply_graph_data_values_func(min, sum if any_stacked else min)
 
-		#logger.info("Value max: %s vs %s", opts['value_max'], self.datarows_max_value)
-
 		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min >= self.graph.graph_args_lower_limit):
 			opts['graph_min'] = self.graph.graph_args_lower_limit
 		else:
@@ -257,5 +255,11 @@ class D3GraphDataGenerator(GraphDataGenerator):
 
 		if self.graph.graph_args_rigid or (self.graph.graph_args_upper_limit is not None and self.y_max <= self.graph.graph_args_upper_limit):
 			opts['graph_max'] = self.graph.graph_args_upper_limit
+
+		# add the ordered list of datarows to the yaxis options
+		graph_order_names = (self.graph.graph_order or '').split()
+		# add all missing datarow names to the end of the list
+		graph_order_names.extend(set(self.datarows_options.keys()) - set(graph_order_names))
+		opts['graph_order'] = graph_order_names
 
 		return opts

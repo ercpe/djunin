@@ -1,76 +1,50 @@
 
-function Datarows(datarows, values) {
+function Datarows(datarows, graph_order, values) {
 
 	this.all = function() {
-		var all = {};
+		var l = [];
 		$.each(Object.keys(datarows), function(idx, name) {
-			var datarow = {
-				name: name,
-				values: $.map(values, function(row) {
-					return {
-						date: new Date(row[0]),
-						value: row[1][name],
-						y: row[1][name], // required for stacking
-					}
-				}),
-				draw: datarows[name].draw,
-				color: datarows[name].color,
-				label: datarows[name].label,
-				info: datarows[name].info,
-				sameas: datarows[name].sameas,
-				value_min: datarows[name].value_min,
-				value_max: datarows[name].value_max,
-				value_current: datarows[name].value_current
-			};
-			all[name] = datarow;
+			var datarow = datarows[name];
+			datarow.name = name;
+
+			// set the draw type of the current datarow. The draw_type is a high-level description of the actual .draw
+			// property (e.g. LINE1, LINE2 and LINE3) are all 'line's).
+			datarow.draw_type = datarow.draw;
+			if (datarow.draw.match("^LINE[0-9]$")) datarow.draw_type = 'line';
+			if (datarow.draw == 'AREA' || datarow.draw == 'STACK') datarow.draw_type = "area";
+			if (datarow.draw == 'AREASTACK') datarow.draw_type = "areastack";
+			if (datarow.draw.match("^LINESTACK[0-9]$")) datarow.draw_type = "linestack";
+
+			datarow.stack = datarow.draw_type == 'area' || datarow.draw_type == 'areastack' || datarow.draw_type == 'linestack';
+
+			datarow.values = $.map(values, function(row) {
+				return {
+					date: new Date(row[0]),
+					value: row[1][name],
+					y: row[1][name], // required for stacking
+				}
+			});
+
+			l.push(datarow);
 		});
-		return all;
+
+		l.sort(function(a, b) {
+			var i = graph_order.indexOf(a.name);
+			var j = graph_order.indexOf(b.name);
+
+			return i == j ? 0 : ((i < j) ? -1 : 1);
+		});
+
+		return l;
 	}();
 
-	this.isStacked = function(draw) {
-		return draw == 'AREASTACK' || draw == 'STACK';
-	}
-
-	this.stacked_datarow_names = function() {
-		var all = this.all;
-		var f = this.isStacked;
-		return $.grep(Object.keys(all), function(name) {
-			return f(all[name].draw)
-		});
-	};
-
-	this.unstacked_datarow_names = function() {
-		var all = this.all;
-		var f = this.isStacked;
-		return $.grep(Object.keys(all), function(name) { return f(all[name].draw) }, true);
-	};
-
-	this.get_many = function(names) {
-		var a = [];
-		for (var i=0; i < names.length; i++) {
-			a.push(this.all[names[i]]);
+	this.get = function(name) {
+		for (var i=0; i < this.all.length; i++) {
+			if (this.all[i].name == name) return this.all[i];
 		}
-		return a;
 	}
 
-	this.stacked = this.get_many(this.stacked_datarow_names());
-	this.unstacked = this.get_many(this.unstacked_datarow_names());
-
-	// move AREA datarows from unstacked to stacked if there it at least one stacked on
-	if (this.stacked.length) {
-		// if there is at lease on stackable datarow, move all AREA datarow from unstacked to stacked
-		var a = this;
-		var del_names = [];
-		$.each(this.unstacked, function(idx, datarow) {
-			if (datarow.draw == 'AREA') {
-				a.stacked.push(datarow);
-				del_names.push(datarow.name);
-			}
-		});
-		$.each(del_names, function(idx, s) {
-			a.unstacked.splice(s, 1);
-		});
-	}
+	this.names = graph_order;
 
 	this.dates = $.map(values, function(d) { return d.date; });
 }
@@ -169,6 +143,7 @@ function DjuninGraph(container_id, url) {
 
 	this.render = function() {
 		this.debug("Rendering " + this.scope + " in " + this.container + " with data from " + this.url);
+		//if (this.scope != "day") return;
 
 		// create svg object
 		this.svg = d3
@@ -205,7 +180,7 @@ function DjuninGraph(container_id, url) {
 
 	this.render_graph = function() {
 		// set up the color domain based on the datarow names
-		this.color = d3.scale.category20().domain(Object.keys(this.datarows.all));
+		this.color = d3.scale.category20().domain(this.datarows.names);
 
 		// setup the x axis of the graph
 		this.xScale.domain(d3.extent(this.datarows.dates));
@@ -244,7 +219,7 @@ function DjuninGraph(container_id, url) {
 			return graph.getColor(aa);
 		}
 
-		$.each([this.stack(this.datarows.stacked), this.datarows.unstacked], function(idx, data) {
+		$.each(this.draw_groups(this.datarows.all), function(idx, data) {
 			graph.svg.selectAll(".datarow-" + idx)
 				.data(data)
 				.enter()
@@ -284,13 +259,63 @@ function DjuninGraph(container_id, url) {
 
 		this.yaxis = response.yaxis;
 
-		this.datarows = new Datarows(response.datarows, response.values);
+		this.datarows = new Datarows(response.datarows, response.yaxis.graph_order, response.values);
+	}
+
+	// creates an array of array used for passing to d3.js
+	//
+	// each array in the array contains one or more datarows to draw together.
+	// the datarows are grouped by the draw_type property which is a more high-level description of the actual
+	// .draw property.
+	// The datarows are grouped together like this:
+	// - AREA + STACK
+	// - AREASTACK
+	// - LINESTACK(1|2|3)
+	// - LINE(1|2|3)
+	this.draw_groups = function(all_datarows) {
+		var groups = [];
+
+		var last_draw_type = "";
+		var last_draw_stack = null;
+
+		var current_group = [];
+
+		for (var i=0; i < all_datarows.length; i++) {
+			var current_datarow = all_datarows[i];
+
+			if (current_datarow.draw_type != last_draw_type) {
+
+				if (current_group.length) {
+					if (last_draw_stack === true) {
+						groups.push(this.stack(current_group));
+					} else {
+						groups.push(current_group);
+					}
+
+					current_group = [];
+				}
+			}
+			current_group.push(current_datarow);
+
+			last_draw_type = current_datarow.draw_type;
+			last_draw_stack = current_datarow.stack;
+		}
+
+		if (current_group.length) {
+			if (last_draw_stack === true) {
+				groups.push(this.stack(current_group));
+			} else {
+				groups.push(current_group);
+			}
+		}
+
+		return groups;
 	}
 
 	// helper function to get the color for a datarows. This is either the value from the datarow config
 	// or the value from the color() definition
 	this.getColor = function(d) {
-		return d.color || this.color(this.datarows.all[d.name || d].sameas || d.name)
+		return d.color || this.color(d.sameas || d.name);
 	}
 
 	this.y_min = function() {
@@ -314,11 +339,10 @@ function DjuninGraph(container_id, url) {
 
 		var graph = this;
 
-		$.each(Object.keys(this.datarows.all), function(idx, datarow_name) {
-			var datarow = graph.datarows.all[datarow_name];
+		$.each(this.datarows.all, function(idx, datarow) {
 			if (datarow.sameas) return;
 
-			var label = datarow.label || datarow.name;
+			var label = (datarow.label != "none" ? datarow.label : null) || datarow.name;
 			var tr = $('<tr></tr>')
 						.attr('data-datarow', datarow.name)
 						.append($('<td></td>').append($('<span class="color" style="background-color: ' +  graph.getColor(datarow) + '"></span>')))
@@ -329,19 +353,22 @@ function DjuninGraph(container_id, url) {
 						.append($('<td class="small"></td>').text(datarow.value_min ? graph.legendFormat(datarow.value_min) : '-'))
 						.append($('<td class="small"></td>').text(datarow.value_max ? graph.legendFormat(datarow.value_max) : '-'))
 						.append($('<td class="small"></td>').text(datarow.value_current ? graph.legendFormat(datarow.value_current) : '-'));
+/*
+			// deactivated for now, as the typical .draw property 'LINE2' already has a 2px stroke width and i didn't
+			// found a nice way to highlight a datarow
 			tr.hover(function() {
 				var name = $(this).data('datarow');
 				$('svg path[data-datarow=' + name + ']', graph.container).addClass('highlighted');
-				var other = graph.datarows.all[name].sameas;
+
+				var other = graph.datarows.get(name).sameas; //graph.datarows.all[name].sameas;
 				if (other) {
-					var output = $.grep(Object.keys(graph.datarows), function(dr_name, idx) {
-						return graph.datarows.all[dr_name].sameas == name;
-					});
-					if (output.length) $('svg path[data-datarow=' + other + ']', graph.container).addClass('highlighted');
+					other = graph.datarows.get(other);
+					$('svg path[data-datarow=' + other.name + ']', graph.container).addClass('highlighted');
 				}
 			}, function() {
 				$('svg path', graph.container).removeClass('highlighted');
 			});
+*/
 			legend.append(tr);
 		});
 

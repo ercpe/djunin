@@ -223,7 +223,7 @@ g.y .tick line {
   stroke-width: 1.5px;
 }
 
-path.highlighted { stroke-width: 2; }
+/* path.highlighted { stroke-width: 2; stroke-dasharray: 1; } */
 
 /* as per rrdgraph */
 path.line1 { stroke-width: 1; }
