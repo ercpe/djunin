@@ -224,3 +224,8 @@ g.y .tick line {
 }
 
 path.highlighted { stroke-width: 2; }
+
+/* as per rrdgraph */
+path.line1 { stroke-width: 1; }
+path.line2 { stroke-width: 2; }
+path.line3 { stroke-width: 3; }

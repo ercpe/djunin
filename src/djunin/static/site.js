@@ -259,7 +259,7 @@ function DjuninGraph(container_id, url) {
 								.style("opacity", '0.7');
 						} else {
 							d3.select(this)
-								.attr("class", "line")
+								.attr("class", "line " + d.draw.toLowerCase())
 								.attr('data-datarow', d.name)
 								.attr("d", function(d) { return graph.line(d.values); })
 								.style("stroke", c)
