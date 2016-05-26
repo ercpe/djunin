@@ -277,8 +277,12 @@ class D3GraphDataGenerator(GraphDataGenerator):
 
 		# add the ordered list of datarows to the yaxis options
 		graph_order_names = (self.graph.graph_order or '').split()
-		# add all missing datarow names to the end of the list
-		graph_order_names.extend(set(self.datarows_options.keys()) - set(graph_order_names))
+		if graph_order_names:
+			# add all missing datarow names to the end of the list
+			graph_order_names.extend(set(self.datarows_options.keys()) - set(graph_order_names))
+		else:
+			# sort datarows alphabetically
+			graph_order_names = sorted(self.datarows_options.keys())
 		opts['graph_order'] = graph_order_names
 
 		return opts
