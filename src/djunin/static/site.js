@@ -102,34 +102,28 @@ function DjuninGraph(container_id, url) {
 	// time scale over the whole width of our area
 	this.xScale = d3.time.scale().range([0, this.width]);
 
-	// x axis definition
-	this.xAxis = d3.svg.axis().scale(this.xScale).orient("bottom").innerTickSize(-this.height)
-					.outerTickSize(0); // remove tick marker at min/max
-
-	function xTicks(axis) {
-		var format = "";
-		var numTicks = this.numXAxisTicks;
-
-		switch (this.graph_scope) {
-			case "day":
-				format = d3.time.format("%H:%M");
-				break;
-			case "week":
-				format = d3.time.format("%d");
-				numTicks = 7;
-				break;
-			case "month":
-				format = d3.time.format("Week %U");
-				break;
-			case "year":
-				format = d3.time.format("%b");
-				numTicks = 12;
-				break;
-		}
-		axis.ticks(numTicks).tickFormat(format);
-		return axis;
+	this.xAxisNumTicks = {
+		'day': this.numXAxisTicks,
+		'week': 7,
+		'month': this.numXAxisTicks,
+		'year': 12,
 	}
-	this.xAxis = xTicks(this.xAxis); // fixme
+
+	this.xAxisTickFormats = {
+		'day': d3.time.format("%H:%M"),
+		'week': d3.time.format("%d"),
+		'month': d3.time.format("Week %U"),
+		'year': d3.time.format("%b"),
+	}
+
+	// x axis definition
+	this.xAxis = d3.svg.axis()
+					.scale(this.xScale)
+					.orient("bottom")
+					.innerTickSize(-this.height)
+					.outerTickSize(0) // remove tick marker at min/max
+					.ticks(this.xAxisNumTicks[this.graph_scope])
+					.tickFormat(this.xAxisTickFormats[this.graph_scope]);
 
 	// linear scale over the complete height
 	this.yScale = d3.scale.linear().range([this.height, 0]);
