@@ -67,6 +67,11 @@
 	{% if detailed %}
 		<div class="row">
 			<div class="col-md-10">
+				<h1>Graph information</h1>
+				{% if current_graph.graph_info %}
+					<p>{{current_graph.graph_info}}</p>
+				{% endif %}
+
 				<table class="table table-condensed ">
 					<tr class="small">
 						<th>Field</th>
