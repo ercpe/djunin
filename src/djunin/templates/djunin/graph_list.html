@@ -64,4 +64,27 @@
 		</div>
 	{% endfor %}
 
+	{% if detailed %}
+		<table class="table table-condensed">
+			<tr>
+				<th>Field</th>
+				<th>Internal name</th>
+				<th>Type</th>
+				<th>Warn</th>
+				<th>Crit</th>
+				<th>Info</th>
+			</tr>
+			{% for dr in current_graph.datarows.all %}
+				<tr>
+					<td>{{dr.label}}</td>
+					<td>{{dr.name}}</td>
+					<td>{{dr.type|default:'GAUGE'}}</td>
+					<td>{{dr.warning|default:''}}</td>
+					<td>{{dr.critical|default:''}}</td>
+					<td>{{dr.info|default:''}}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% endif %}
+
 {% endblock %}
