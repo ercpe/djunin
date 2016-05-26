@@ -221,14 +221,15 @@ g.y .tick line {
   fill: none;
   stroke: steelblue;
   stroke-width: 1.5px;
+  stroke-rendering: crispEdges;
 }
 
 /* path.highlighted { stroke-width: 2; stroke-dasharray: 1; } */
 
 /* as per rrdgraph */
-path.line1 { stroke-width: 1; }
-path.line2 { stroke-width: 2; }
-path.line3 { stroke-width: 3; }
-path.line1.highlighted { stroke-width: 2; }
-path.line2.highlighted { stroke-width: 3; }
-path.line3.highlighted { stroke-width: 4; }
+path.line1 { stroke-width: 1.3px; }
+path.line2 { stroke-width: 2px; }
+path.line3 { stroke-width: 3px; }
+path.line1.highlighted { stroke-width: 2px; }
+path.line2.highlighted { stroke-width: 3px; }
+path.line3.highlighted { stroke-width: 4px; }
