@@ -143,7 +143,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		if self._datarow_max_value is None:
 			max_values = []
 
-			line_datarows = [k for k, v in self.datarows_options.items() if v['draw'] in ('LINE2')]
+			line_datarows = [k for k, v in self.datarows_options.items() if v['draw'] in ('LINE1', 'LINE2', 'LINE3')]
 			for _, datarow_values in self.graph_data:
 				line_values = [v for k, v in datarow_values.items() if k in line_datarows and v is not None]
 				if line_values:
@@ -185,6 +185,8 @@ class D3GraphDataGenerator(GraphDataGenerator):
 	def build_graph_data(self):
 		def _inner():
 			for t, datarows in self.raw_data.items():
+				total = None
+
 				for k, v in datarows.items():
 					value = v
 
@@ -198,7 +200,16 @@ class D3GraphDataGenerator(GraphDataGenerator):
 
 						value = value * -1 if k in self.invert_datarow_names else value
 
+						if total is None:
+							total = value
+						else:
+							total += value
+
 					datarows[k] = value
+
+				if self.graph.graph_total and total is not None:
+					datarows[self.graph.graph_total] = total
+
 				yield t, datarows
 
 		return list(_inner())
@@ -214,7 +225,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				d = {
 					'min': dr.min,
 					'max': dr.max,
-					'draw': dr.draw or 'LINE2',
+					'draw': dr.draw or 'LINE1',
 					'label': dr.label,
 					'info': dr.info,
 				}
@@ -231,6 +242,14 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
 
 				self._datarow_options[dr.name] = dict(((k, v) for k, v in d.items() if v))
+
+			if self.graph.graph_total:
+				# fake a new "total" datarow
+				self._datarow_options[self.graph.graph_total] = {
+					'draw': 'LINE1',
+					'color': '#000000',
+					'label': self.graph.graph_total
+				}
 
 		return self._datarow_options
 
