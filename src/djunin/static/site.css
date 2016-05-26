@@ -229,3 +229,6 @@ g.y .tick line {
 path.line1 { stroke-width: 1; }
 path.line2 { stroke-width: 2; }
 path.line3 { stroke-width: 3; }
+path.line1.highlighted { stroke-width: 2; }
+path.line2.highlighted { stroke-width: 3; }
+path.line3.highlighted { stroke-width: 4; }

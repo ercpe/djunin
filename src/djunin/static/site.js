@@ -353,7 +353,7 @@ function DjuninGraph(container_id, url) {
 						.append($('<td class="small"></td>').text(datarow.value_min ? graph.legendFormat(datarow.value_min) : '-'))
 						.append($('<td class="small"></td>').text(datarow.value_max ? graph.legendFormat(datarow.value_max) : '-'))
 						.append($('<td class="small"></td>').text(datarow.value_current ? graph.legendFormat(datarow.value_current) : '-'));
-/*
+
 			// deactivated for now, as the typical .draw property 'LINE2' already has a 2px stroke width and i didn't
 			// found a nice way to highlight a datarow
 			tr.hover(function() {
@@ -368,7 +368,7 @@ function DjuninGraph(container_id, url) {
 			}, function() {
 				$('svg path', graph.container).removeClass('highlighted');
 			});
-*/
+
 			legend.append(tr);
 		});
 
