@@ -16,6 +16,7 @@ function Datarows(datarows, values) {
 				draw: datarows[name].draw,
 				color: datarows[name].color,
 				label: datarows[name].label,
+				info: datarows[name].info,
 				sameas: datarows[name].sameas,
 				value_min: datarows[name].value_min,
 				value_max: datarows[name].value_max,
