@@ -65,26 +65,31 @@
 	{% endfor %}
 
 	{% if detailed %}
-		<table class="table table-condensed">
-			<tr>
-				<th>Field</th>
-				<th>Internal name</th>
-				<th>Type</th>
-				<th>Warn</th>
-				<th>Crit</th>
-				<th>Info</th>
-			</tr>
-			{% for dr in current_graph.datarows.all %}
-				<tr>
-					<td>{{dr.label}}</td>
-					<td>{{dr.name}}</td>
-					<td>{{dr.type|default:'GAUGE'}}</td>
-					<td>{{dr.warning|default:''}}</td>
-					<td>{{dr.critical|default:''}}</td>
-					<td>{{dr.info|default:''}}</td>
-				</tr>
-			{% endfor %}
-		</table>
+		<div class="row">
+			<div class="col-md-10">
+				<table class="table table-condensed ">
+					<tr class="small">
+						<th>Field</th>
+						<th>Type</th>
+						<th>Thresholds</th>
+						<th>Info</th>
+					</tr>
+					{% for dr in current_graph.datarows.all %}
+						<tr class="small">
+							<td>{{dr.label|default:dr.name}}</td>
+							<td>{{dr.type|default:'GAUGE'}}</td>
+							<td>
+								{% if dr.warning %}{{dr.warning}}
+									{% if dr.critical %} / {% endif %}
+								{% endif %}
+								{% if dr.warning %}{{dr.warning}}{% endif %}
+							</td>
+							<td>{{dr.info|default:''}}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
 	{% endif %}
 
 {% endblock %}
