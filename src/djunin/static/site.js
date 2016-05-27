@@ -338,39 +338,59 @@ function DjuninGraph(container_id, url) {
 		legend.append($('<tr><th colspan="2"></th><th>Min</th><th>Max</th><th>Current</th></tr>'));
 
 		var graph = this;
+		var groups = [];
 
-		$.each(this.datarows.all, function(idx, datarow) {
-			if (datarow.sameas) return;
+		for (var i=0; i < this.datarows.all.length; i++) {
+			var datarow = this.datarows.all[i];
+			if (datarow.sameas) {
+				for (var j=0; j < groups.length; j++) {
+					if (groups[j][0].name == datarow.sameas) {
+						groups[j].push(datarow);
+						break;
+					}
+				}
+			} else {
+				groups.push([datarow]);
+			}
+		}
 
-			var label = (datarow.label != "none" ? datarow.label : null) || datarow.name;
+		for (var i=0; i < groups.length; i++) {
+			var group = groups[i];
+			var primary_datarow = group[0];
+			var label = primary_datarow.label || primary_datarow.name;
+
+			var scale_sides = $.map(group, function(dr, x) { return dr.sameas ? '+' : '-'; });
+			var min_values = $.map(group, function(dr, x) { return dr.value_min ? graph.legendFormat(dr.value_min) : '-'; });
+			var max_values = $.map(group, function(dr, x) { return dr.value_max ? graph.legendFormat(dr.value_max) : '-'; });
+			var current_values = $.map(group, function(dr, x) { return dr.value_current ? graph.legendFormat(dr.value_current) : '-'; });
+			var group_names = $.map(group, function(dr, x) { return dr.name; });
+
 			var tr = $('<tr></tr>')
-						.attr('data-datarow', datarow.name)
-						.append($('<td></td>').append($('<span class="color" style="background-color: ' +  graph.getColor(datarow) + '"></span>')))
+						.attr('data-datarow', primary_datarow.name)
+						.attr('data-datarow-names', group_names.join(' '))
+						.append($('<td></td>').append(
+							$('<span class="color"></span>')
+								.attr('style', 'background-color: ' + this.getColor(primary_datarow))
+						))
 						.append($('<td class="small"></td>')
-									.text(label)
-									.attr('title', datarow.info || label)
+									.text(label + (scale_sides.length > 1 ? ' (' + scale_sides.join('/') + ')' : ''))
+									.attr('title', primary_datarow.info || label)
 						)
-						.append($('<td class="small"></td>').text(datarow.value_min ? graph.legendFormat(datarow.value_min) : '-'))
-						.append($('<td class="small"></td>').text(datarow.value_max ? graph.legendFormat(datarow.value_max) : '-'))
-						.append($('<td class="small"></td>').text(datarow.value_current ? graph.legendFormat(datarow.value_current) : '-'));
+						.append($('<td class="small"></td>').text(min_values.join(' / ')))
+						.append($('<td class="small"></td>').text(max_values.join(' / ')))
+						.append($('<td class="small"></td>').text(current_values.join(' / ')));
 
-			// deactivated for now, as the typical .draw property 'LINE2' already has a 2px stroke width and i didn't
-			// found a nice way to highlight a datarow
 			tr.hover(function() {
-				var name = $(this).data('datarow');
-				$('svg path[data-datarow=' + name + ']', graph.container).addClass('highlighted');
-
-				var other = graph.datarows.get(name).sameas; //graph.datarows.all[name].sameas;
-				if (other) {
-					other = graph.datarows.get(other);
-					$('svg path[data-datarow=' + other.name + ']', graph.container).addClass('highlighted');
+				var highlight_datarows = $(this).data('datarow-names').split(' ');
+				for (var i=0; i < highlight_datarows.length; i++) {
+					$('svg path[data-datarow=' + highlight_datarows[i] + ']', graph.container).addClass('highlighted');
 				}
 			}, function() {
 				$('svg path', graph.container).removeClass('highlighted');
 			});
 
 			legend.append(tr);
-		});
+		};
 
 		$(legend_container).append(legend);
 	}
