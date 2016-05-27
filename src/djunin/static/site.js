@@ -109,7 +109,7 @@ function DjuninGraph(container_id, url) {
 					.innerTickSize(-this.height)
 					.outerTickSize(0) // remove tick marker at min/max
 					.ticks(this.xAxisNumTicks[this.scope])
-					.tickFormat(this.xAxisTickFormats[this.scope]);
+					.tickFormat(this.scope != "custom" ? this.xAxisTickFormats[this.scope] : undefined);
 
 	// linear scale over the complete height
 	this.yScale = d3.scale.linear().range([this.height, 0]);
