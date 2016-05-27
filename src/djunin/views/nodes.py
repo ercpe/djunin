@@ -128,7 +128,7 @@ class GraphDataView(BaseViewMixin, DetailView):
 			range_end = self.request.GET.get('end', None) or None
 			if scope_name == "custom":
 				if range_start is None:
-					raise HttpResponseBadRequest()
+					return HttpResponseBadRequest()
 				range_start = int(range_start)
 				if range_end is not None:
 					range_end = int(range_end)

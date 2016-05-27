@@ -144,11 +144,6 @@ function DjuninGraph(container_id, url) {
 	// stack layout definition
 	this.stack = d3.layout.stack().values(function(d) { return d.values; });
 
-    this.update = function() {
-        $('svg,table', this.container.parent()).remove();
-        this.render();
-    }
-
 	this.render = function() {
 		//this.debug("Rendering " + this.scope + " in " + this.container + " with data from " + this.url);
 
@@ -345,7 +340,6 @@ function DjuninGraph(container_id, url) {
 		return this.yaxis.graph_max && this.yaxis.value_max ?
 				Math.max(this.yaxis.graph_max, this.yaxis.value_max) :
 				(this.yaxis.graph_max || this.yaxis.value_max);
-
 	}
 
 	this.makeLegend = function() {
@@ -436,8 +430,6 @@ $(document).ready(function () {
     // auto-load graphs for day, week, month, year
 	$('.djunin-graph:visible').each(function(i, elem) { insert_graph(elem); });
 
-    var custom_graph = null;
-
     // event handler for custom range graph
 	$('#graph-custom').on('shown.bs.modal', function() {
 	    $('svg,table', $(this)).remove();
@@ -448,14 +440,38 @@ $(document).ready(function () {
 	    if (!$(elem).data('range-end')) {
 	        $(elem).data('range-end', new Date().getTime());
 	    }
-	    custom_graph = insert_graph(elem);
+	    insert_graph(elem);
 	});
 
+	// todo: this creates a new svg object every time!
 	$('#custom-zoom-out').on('click', function() {
-	    var x = $($('#graph-custom .djunin-graph')[0]);
-	    var oldstart = x.data('range-start');
-	    x.data('range-end', x.data('range-start'));
-	    x.data('range-start', oldstart - (34*3600*1000));
-	    custom_graph.update()
+		var div = $('#graph-custom .djunin-graph')[0];
+	    var x = $(div);
+	    var start = x.data('range-start');
+	    var end = x.data('range-end');
+	    var diff = end - start;
+	    var new_range = diff * 2;
+
+	    x.data('range-start', start - (new_range/2));
+	    x.data('range-end', end + (new_range/2));
+
+		$('svg,table', x.parent()).remove();
+	    insert_graph(div);
+	});
+
+	// todo: this creates a new svg object every time!
+	$('#custom-zoom-in').on('click', function() {
+		var div = $('#graph-custom .djunin-graph')[0];
+	    var x = $(div);
+	    var start = x.data('range-start');
+	    var end = x.data('range-end');
+	    var diff = end - start;
+	    var new_range = diff / 2;
+
+	    x.data('range-start', start + (new_range/2));
+	    x.data('range-end', end - (new_range/2));
+
+		$('svg,table', x.parent()).remove();
+	    insert_graph(div);
 	});
 });
