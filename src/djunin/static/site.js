@@ -453,8 +453,8 @@ $(document).ready(function () {
 	    var diff = end - start;
 	    var new_range = diff * 2;
 
-	    x.data('range-start', start - (new_range/2));
-	    x.data('range-end', end + (new_range/2));
+	    x.data('range-start', start - new_range);
+	    x.data('range-end', end);
 
 		$('svg,table', x.parent()).remove();
 	    insert_graph(div);
@@ -470,8 +470,8 @@ $(document).ready(function () {
 	    var diff = end - start;
 	    var new_range = diff / 2;
 
-	    x.data('range-start', start + (new_range/2));
-	    x.data('range-end', end - (new_range/2));
+	    x.data('range-start', start + new_range);
+	    x.data('range-end', end);
 
 		$('svg,table', x.parent()).remove();
 	    insert_graph(div);
