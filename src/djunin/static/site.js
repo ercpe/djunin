@@ -144,6 +144,11 @@ function DjuninGraph(container_id, url) {
 	// stack layout definition
 	this.stack = d3.layout.stack().values(function(d) { return d.values; });
 
+    this.update = function() {
+        $('svg,table', this.container.parent()).remove();
+        this.render();
+    }
+
 	this.render = function() {
 		//this.debug("Rendering " + this.scope + " in " + this.container + " with data from " + this.url);
 
@@ -423,11 +428,15 @@ $(document).ready(function () {
     	var url = $(graph_div).data('url');
 		if (!url) return;
 
-		new DjuninGraph('#' + graph_div.id, url).render();
+		var g = new DjuninGraph('#' + graph_div.id, url);
+		g.render();
+		return g;
     }
 
     // auto-load graphs for day, week, month, year
 	$('.djunin-graph:visible').each(function(i, elem) { insert_graph(elem); });
+
+    var custom_graph = null;
 
     // event handler for custom range graph
 	$('#graph-custom').on('shown.bs.modal', function() {
@@ -436,6 +445,17 @@ $(document).ready(function () {
 	    if (!$(elem).data('range-start')) {
 	        $(elem).data('range-start', new Date().getTime() - (34*3600*1000)); // mimic -34h from graphs.py
 	    }
-	    insert_graph(elem);
+	    if (!$(elem).data('range-end')) {
+	        $(elem).data('range-end', new Date().getTime());
+	    }
+	    custom_graph = insert_graph(elem);
+	});
+
+	$('#custom-zoom-out').on('click', function() {
+	    var x = $($('#graph-custom .djunin-graph')[0]);
+	    var oldstart = x.data('range-start');
+	    x.data('range-end', x.data('range-start'));
+	    x.data('range-start', oldstart - (34*3600*1000));
+	    custom_graph.update()
 	});
 });

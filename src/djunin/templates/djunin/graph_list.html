@@ -19,6 +19,11 @@
 						<h4 class="modal-title">{{current_graph}}</h4>
 					</div>
 					<div class="modal-body">
+						<div class="btn-group pull-right" role="group" aria-label="tools">
+							<button type="button" class="btn btn-default" title="Zoom in" id="custom-zoom-in">{% bootstrap_icon "zoom-in" %} Zoom in</button>
+							<button type="button" class="btn btn-default" title="Zoom out" id="custom-zoom-out">{% bootstrap_icon "zoom-out" %} Zoom out</button>
+						</div>
+
 						<div id="graph-{{current_graph.name}}-custom" class="djunin-graph"
 								data-url="{% url 'graph_data' current_graph.node.group current_graph.node.name current_graph.name 'custom' %}"
 								data-graph-scope="custom"
