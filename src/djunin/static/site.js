@@ -74,6 +74,15 @@ function DjuninGraph(container_id, url) {
 
 	//if (this.debug_mode && this.scope != 'day') return;
 
+    this.range_start = function() {
+        var start = this.container.data('range-start');
+        return start ? Math.round(start / 1000, 0) : start;
+    }
+    this.range_end = function() {
+        var end = this.container.data('range-end');
+        return end ? Math.round(end / 1000, 0) : end;
+    }
+
 	// time scale over the whole width of our area
 	this.xScale = d3.time.scale().range([0, this.width]);
 
@@ -82,6 +91,7 @@ function DjuninGraph(container_id, url) {
 		'week': 7,
 		'month': this.numXAxisTicks,
 		'year': 12,
+		'custom': this.numXAxisTicks,
 	}
 
 	this.xAxisTickFormats = {
@@ -89,6 +99,7 @@ function DjuninGraph(container_id, url) {
 		'week': d3.time.format("%d"),
 		'month': d3.time.format("Week %U"),
 		'year': d3.time.format("%b"),
+		'custom': d3.time.format("%H:%M"),
 	}
 
 	// x axis definition
@@ -123,18 +134,9 @@ function DjuninGraph(container_id, url) {
 	// definition for areas in our graphs
 	this.area = d3.svg.area()
 		.defined(function(d) { return d.value != null; }) // makes null values a gap
-		.x(function(d) {
-			//debug && console.log("X: " + xScale(d.date));
-			return this.xScale(d.date);
-		})
-		.y0(function(d) {
-			//debug && console.log(d.name + ": y0: " + d.y0)
-			return this.yScale(d.y0 || 0)
-		})
-		.y1(function(d) {
-			//debug && console.log(d.name + ": y1: " + (d.y0 + d.value) + " (value: " + d.value + ") - fixed: " + ((d.y0 || 0) + d.value) + " -> " + yScale((d.y0 || 0) + d.value));
-			return this.yScale((d.y0 || 0) + d.value);
-		});
+		.x(function(d) { return this.xScale(d.date); })
+		.y0(function(d) { return this.yScale(d.y0 || 0) })
+		.y1(function(d) { return this.yScale((d.y0 || 0) + d.value); });
 
 	// format for items in the legend table. .2 means two decimal points
 	this.legendFormat = d3.format('.2s')
@@ -143,8 +145,7 @@ function DjuninGraph(container_id, url) {
 	this.stack = d3.layout.stack().values(function(d) { return d.values; });
 
 	this.render = function() {
-		this.debug("Rendering " + this.scope + " in " + this.container + " with data from " + this.url);
-		//if (this.scope != "day") return;
+		//this.debug("Rendering " + this.scope + " in " + this.container + " with data from " + this.url);
 
 		// create svg object
 		this.svg = d3
@@ -158,6 +159,11 @@ function DjuninGraph(container_id, url) {
 		// fetch data from server
 		$.ajax({
 			url: this.url,
+			type: 'get',
+			data: {
+			    'start': this.range_start(),
+			    'end': this.range_end(),
+			},
 			context: this,
 			dataType: 'json',
 		}).done(function(response) {
@@ -193,7 +199,7 @@ function DjuninGraph(container_id, url) {
 		  	.call(this.xAxis);
 
         // move x axis label to the center of the tick area
-        if (this.scope != "day") {
+        if (this.scope != "day" && this.scope != "custom") {
             this.svg.selectAll('.x text').attr('transform', 'translate(' + (this.width / this.xAxisNumTicks[this.scope] / 2) + ', 0)');
         }
 
@@ -413,11 +419,23 @@ $(document).ready(function () {
 		}
 	});
 
-	$('.djunin-graph:visible').each(function(i, elem) {
-		var url = $(elem).data('url');
-		if (url) {
-			var g = new DjuninGraph('#' + elem.id, url);
-			g.render();
-		}
+    function insert_graph(graph_div) {
+    	var url = $(graph_div).data('url');
+		if (!url) return;
+
+		new DjuninGraph('#' + graph_div.id, url).render();
+    }
+
+    // auto-load graphs for day, week, month, year
+	$('.djunin-graph:visible').each(function(i, elem) { insert_graph(elem); });
+
+    // event handler for custom range graph
+	$('#graph-custom').on('shown.bs.modal', function() {
+	    $('svg,table', $(this)).remove();
+	    var elem = $('.djunin-graph', this)[0];
+	    if (!$(elem).data('range-start')) {
+	        $(elem).data('range-start', new Date().getTime() - (34*3600*1000)); // mimic -34h from graphs.py
+	    }
+	    insert_graph(elem);
 	});
 });

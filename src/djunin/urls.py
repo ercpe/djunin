@@ -30,7 +30,7 @@ urlpatterns = [
 	url(r'^opensearch/', include('opensearch.urls')),
 	url(r'^jump$', JumpToView.as_view(), name='jump'),
 	url(r'^search$', SearchView.as_view(), name='search'),
-	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year)\.json$', GraphDataView.as_view(), name='graph_data'),
+	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year|custom)\.json$', GraphDataView.as_view(), name='graph_data'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<graph_category>[^/]+)/(?P<graph_name>[^/]+)$', GraphsListView.as_view(), name='graphs_graph'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?:(?P<graph_category>[^/]+))?$', GraphsListView.as_view(), name='graphs'),
 	url(r'^nodes/(?P<group>[^/]+)/?$', NodesListView.as_view(), name='group_nodes'),

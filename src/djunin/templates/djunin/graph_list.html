@@ -1,5 +1,6 @@
 {% extends "template.html" %}
 {% load staticfiles %}
+{% load bootstrap3 %}
 
 {% block scripts %}
 	<script src="{% static 'd3.v3.min.js' %}" charset="utf-8"></script>
@@ -8,17 +9,51 @@
 {% block title %}{% if current_graph %}{{current_graph}} :: {{node}}{% else %}{{current_category}} :: {{block.super}}{% endif %}{% endblock %}
 
 {% block content %}
-	<div>
-		<label for="node-graph-category">Category</label>
-		<div class="btn-group">
-			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="node-graph-category" accesskey="g">
-				{{current_category}} <span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu">
-				{% for category in node.graph_categories %}
-					<li><a href="{% url 'graphs' node.group node.name category %}">{{category}}</a></li>
-				{% endfor %}
-			</ul>
+
+	{% if detailed %}
+		<div class="modal" tabindex="-1" role="dialog" id="graph-custom">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">{{current_graph}}</h4>
+					</div>
+					<div class="modal-body">
+						<div id="graph-{{current_graph.name}}-custom" class="djunin-graph"
+								data-url="{% url 'graph_data' current_graph.node.group current_graph.node.name current_graph.name 'custom' %}"
+								data-graph-scope="custom"
+								data-range-start=""
+							 	data-range-end=""></div>
+						<div id="graph-{{current_graph.name}}-custom-legend" class="djunin-graph-legend"></div>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+	{% endif %}
+
+	<div class="row">
+		<div class="col-md-6">
+			<label for="node-graph-category">Category</label>
+			<div class="btn-group">
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="node-graph-category" accesskey="g">
+					{{current_category}} <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu">
+					{% for category in node.graph_categories %}
+						<li><a href="{% url 'graphs' node.group node.name category %}">{{category}}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-4">
+			{% if detailed %}
+				<div class="btn-group pull-right" role="group" aria-label="tools">
+					<button type="button" class="btn btn-default" title="Select custom range"
+							data-toggle="modal" data-target="#graph-custom">
+								{% bootstrap_icon "screenshot" %} Custom range
+					</button>
+				</div>
+			{% endif %}
 		</div>
 	</div>
 

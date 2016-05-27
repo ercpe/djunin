@@ -19,7 +19,7 @@ SCOPE_RANGE = 5
 
 class GraphDataGenerator(object):
 
-	def __init__(self, node, graph, scope_name):
+	def __init__(self, node, graph, scope_name, range_start=None, range_end=None):
 		self.data_scope_name = scope_name
 		if scope_name == 'day':
 			self.data_scope = SCOPE_DAY
@@ -29,6 +29,8 @@ class GraphDataGenerator(object):
 			self.data_scope = SCOPE_MONTH
 		elif scope_name == 'year':
 			self.data_scope = SCOPE_YEAR
+		elif scope_name == 'custom':
+			self.data_scope = SCOPE_RANGE
 		else:
 			raise ValueError("Unknown scope '%s'" % scope_name)
 
@@ -42,6 +44,8 @@ class GraphDataGenerator(object):
 		self._resolution = None
 		self._rrdcached = getattr(settings, 'RRDCACHED', None)
 		self._flush_rrdcached_before_fetch = getattr(settings, 'FLUSH_BEFORE_FETCH', False)
+		self._range_start = range_start
+		self._range_end = range_end
 
 	@property
 	def raw_data(self):
@@ -73,17 +77,22 @@ class GraphDataGenerator(object):
 				except:
 					logger.exception("Could not flushrrdcached at %s", self._rrdcached)
 
-			date_range = ""
+			date_range_start = ""
+			date_range_end = ""
 			if self.data_scope == SCOPE_DAY:
-				date_range = "-s -34h"
+				date_range_start = "-s -34h"
 			elif self.data_scope == SCOPE_WEEK:
-				date_range = "-s -200h"
+				date_range_start = "-s -200h"
 			elif self.data_scope == SCOPE_MONTH:
-				date_range = "-s -756h"
+				date_range_start = "-s -756h"
 			elif self.data_scope == SCOPE_YEAR:
-				date_range = "-s -365d"
+				date_range_start = "-s -365d"
+			elif self.data_scope == SCOPE_RANGE:
+				date_range_start = "-s %d" % self._range_start
+				if self._range_end is not None:
+					date_range_end = '-e %d' % self._range_end
 
-			(self._start, self._end, self._resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range])
+			(self._start, self._end, self._resolution), (no,), data = rrdtool.fetch([datafile, 'AVERAGE', date_range_start, date_range_end])
 
 			for dt, value in zip(
 					(x * 1000 for x in xrange(self._start, self._end - self._resolution, self._resolution)),
