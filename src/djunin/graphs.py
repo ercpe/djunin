@@ -250,7 +250,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				d['value_max'] = round(max(datarow_values), 2) if datarow_values else None
 				d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
 
-				self._datarow_options[dr.name] = dict(((k, v) for k, v in d.items() if v))
+				self._datarow_options[dr.name] = dict(((k, v) for k, v in d.items() if v is not None))
 
 			if self.graph.graph_total:
 				# fake a new "total" datarow
