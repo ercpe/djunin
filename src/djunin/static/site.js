@@ -111,7 +111,8 @@ function DjuninGraph(container_id, url) {
 					.orient("left")
 					.innerTickSize(-this.width)
 					.outerTickSize(0)  // remove tick marker at min/max
-					.ticks(this.numYAxisTicks).tickFormat(this.yAxisTickFormat);
+					.ticks(this.numYAxisTicks)
+					.tickFormat(this.yAxisTickFormat);
 
 	// definition for every line in our graphs
 	this.line = d3.svg.line().interpolate("basis")
@@ -190,6 +191,11 @@ function DjuninGraph(container_id, url) {
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + this.height + ")")
 		  	.call(this.xAxis);
+
+        // move x axis label to the center of the tick area
+        if (this.scope != "day") {
+            this.svg.selectAll('.x text').attr('transform', 'translate(' + (this.width / this.xAxisNumTicks[this.scope] / 2) + ', 0)');
+        }
 
 		// setup y scale of the graph
 		this.debug_mode && this.debug("Graph min: " + this.y_min() + ", max: " + this.y_max());
