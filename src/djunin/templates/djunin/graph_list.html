@@ -21,8 +21,8 @@
 					<div class="modal-body">
 						<div>
 							<div class="btn-group pull-right" role="group" aria-label="tools">
-								<button type="button" class="btn btn-default" title="Zoom in" id="custom-zoom-in">{% bootstrap_icon "zoom-in" %} Zoom in</button>
-								<button type="button" class="btn btn-default" title="Zoom out" id="custom-zoom-out">{% bootstrap_icon "zoom-out" %} Zoom out</button>
+								<a class="btn btn-default" title="Zoom in" id="custom-zoom-in">{% bootstrap_icon "zoom-in" %} Zoom in</a>
+								<a class="btn btn-default" title="Zoom out" id="custom-zoom-out">{% bootstrap_icon "zoom-out" %} Zoom out</a>
 							</div>
 							<div class="clearfix"></div>
 						</div>
@@ -56,10 +56,9 @@
 		<div class="col-md-4">
 			{% if detailed %}
 				<div class="btn-group pull-right" role="group" aria-label="tools">
-					<button type="button" class="btn btn-default" title="Select custom range"
-							data-toggle="modal" data-target="#graph-custom">
-								{% bootstrap_icon "screenshot" %} Custom range
-					</button>
+					<a class="btn btn-default" title="Select custom range" data-toggle="modal" data-target="#graph-custom">
+						{% bootstrap_icon "screenshot" %} Custom range
+					</a>
 				</div>
 			{% endif %}
 		</div>

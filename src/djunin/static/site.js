@@ -444,7 +444,8 @@ $(document).ready(function () {
 	});
 
 	// todo: this creates a new svg object every time!
-	$('#custom-zoom-out').on('click', function() {
+	$('#custom-zoom-out').on('click', function(e) {
+		e.preventDefault();
 		var div = $('#graph-custom .djunin-graph')[0];
 	    var x = $(div);
 	    var start = x.data('range-start');
@@ -460,7 +461,8 @@ $(document).ready(function () {
 	});
 
 	// todo: this creates a new svg object every time!
-	$('#custom-zoom-in').on('click', function() {
+	$('#custom-zoom-in').on('click', function(e) {
+		e.preventDefault();
 		var div = $('#graph-custom .djunin-graph')[0];
 	    var x = $(div);
 	    var start = x.data('range-start');
