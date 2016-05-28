@@ -62,7 +62,7 @@ class GraphDataGenerator(object):
 	@property
 	def cdefs(self):
 		if self._datarow_cdefs is None:
-			self._datarow_cdefs = dict(self.datarows.filter(name__endswith='_mem').exclude(cdef=None).values_list('name', 'cdef'))
+			self._datarow_cdefs = dict(self.datarows.exclude(cdef=None).values_list('name', 'cdef'))
 		return self._datarow_cdefs
 
 	def _read_data(self):
@@ -202,9 +202,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 					if value is not None:
 						if k in self.cdefs:
 							cdef = self.cdefs[k]
-							value = RPN().calc(cdef.split(','), {
-								k: value
-							})
+							value = RPN().calc(cdef.split(','), { k: value })
 							value = round(value, 5)
 
 						value = value * -1 if k in self.invert_datarow_names else value
@@ -245,7 +243,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 				if dr.colour:
 					d['color'] = '#%s' % dr.colour
 
-				datarow_values = [v[dr.name] for t, v in self.raw_data.items() if v.get(dr.name, None) is not None]
+				datarow_values = [v[dr.name] for t, v in self.graph_data if v.get(dr.name, None) is not None]
 				d['value_min'] = round(min(datarow_values), 2) if datarow_values else None
 				d['value_max'] = round(max(datarow_values), 2) if datarow_values else None
 				d['value_current'] = round(datarow_values[-1], 2) if datarow_values else None
