@@ -152,7 +152,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 		if self._datarow_max_value is None:
 			max_values = []
 
-			line_datarows = [k for k, v in self.datarows_options.items() if v['draw'] in ('LINE1', 'LINE2', 'LINE3')]
+			line_datarows = [k for k, v in self.datarows_options.items() if v['draw'] in ('AREA', 'LINE1', 'LINE2', 'LINE3')]
 			for _, datarow_values in self.graph_data:
 				line_values = [v for k, v in datarow_values.items() if k in line_datarows and v is not None]
 				if line_values:
@@ -269,7 +269,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 			opts['label'] = self.graph.graph_vlabel.replace('${graph_period}', self.graph.graph_period or 'second')
 
 		any_stacked = any([dr.draw in ('STACK', 'AREASTACK') for dr in self.datarows])
-		opts['value_max'] = self.datarows_max_value # self._apply_graph_data_values_func(max, sum if any_stacked else max)
+		opts['value_max'] = self.datarows_max_value
 		opts['value_min'] = self._apply_graph_data_values_func(min, sum if any_stacked else min)
 
 		if self.graph.graph_args_rigid or (self.graph.graph_args_lower_limit is not None and self.y_min >= self.graph.graph_args_lower_limit):

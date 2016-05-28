@@ -287,6 +287,7 @@ function DjuninGraph(container_id, url) {
 	this.draw_groups = function(all_datarows) {
 		var groups = [];
 
+		var last_draw = "";
 		var last_draw_type = "";
 		var last_draw_stack = null;
 
@@ -295,7 +296,9 @@ function DjuninGraph(container_id, url) {
 		for (var i=0; i < all_datarows.length; i++) {
 			var current_datarow = all_datarows[i];
 
-			if (current_datarow.draw_type != last_draw_type) {
+			var new_group = current_datarow.draw_type != last_draw_type || // draw type has changed
+							(current_datarow.draw_type == 'area' && current_datarow.draw == 'AREA' && last_draw == 'AREA') // new group for AREA's without STACKs
+			if (new_group) {
 
 				if (current_group.length) {
 					if (last_draw_stack === true) {
@@ -309,6 +312,7 @@ function DjuninGraph(container_id, url) {
 			}
 			current_group.push(current_datarow);
 
+			last_draw = current_datarow.draw;
 			last_draw_type = current_datarow.draw_type;
 			last_draw_stack = current_datarow.stack;
 		}
