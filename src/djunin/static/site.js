@@ -126,7 +126,7 @@ function DjuninGraph(container_id, url) {
 					.tickFormat(this.yAxisTickFormat);
 
 	// definition for every line in our graphs
-	this.line = d3.svg.line().interpolate("basis")
+	this.line = d3.svg.line()
 		.defined(function(d) { return d.value != null; }) // makes null values a gap
 		.x(function(d) { return this.xScale(d.date); }) // convert all values for x and y in our data to a px value in our svg
 		.y(function(d) { return this.yScale(d.value); });
