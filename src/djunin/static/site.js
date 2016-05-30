@@ -375,8 +375,32 @@ function DjuninGraph(container_id, url) {
 			var label = primary_datarow.label || primary_datarow.name;
 
 			var scale_sides = $.map(group, function(dr, x) { return dr.sameas ? '+' : '-'; });
-			var min_values = $.map(group, function(dr, x) { return dr.value_min != null ? graph.legendFormat(dr.value_min) : '-'; });
-			var max_values = $.map(group, function(dr, x) { return dr.value_max != null ? graph.legendFormat(dr.value_max) : '-'; });
+			var min_values = $.map(group, function(dr, x) {
+				var negative = false;
+				$.each(graph.datarows.all, function(i, other) {
+					if (other.sameas == dr.name) {
+						negative = true;
+						return false;
+					}
+				});
+				if (negative) {
+					return dr.value_max != null ? graph.legendFormat(dr.value_max) : '-';
+				}
+				return dr.value_min != null ? graph.legendFormat(dr.value_min) : '-';
+			});
+			var max_values = $.map(group, function(dr, x) {
+				var negative = false;
+				$.each(graph.datarows.all, function(i, other) {
+					if (other.sameas == dr.name) {
+						negative = true;
+						return false;
+					}
+				});
+				if (negative) {
+					return dr.value_min != null ? graph.legendFormat(dr.value_min) : '-';
+				}
+				return dr.value_max != null ? graph.legendFormat(dr.value_max) : '-';
+			});
 			var current_values = $.map(group, function(dr, x) { return dr.value_current != null ? graph.legendFormat(dr.value_current) : '-'; });
 			var group_names = $.map(group, function(dr, x) { return dr.name; });
 
