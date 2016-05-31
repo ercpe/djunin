@@ -202,7 +202,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
 					if value is not None:
 						if k in self.cdefs:
 							cdef = self.cdefs[k]
-							value = RPN().calc(cdef.split(','), { k: value })
+							value = RPN().calc(cdef.split(','), datarows)
 							value = round(value, 5)
 
 						value = value * -1 if k in self.invert_datarow_names else value
