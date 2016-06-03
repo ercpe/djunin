@@ -355,6 +355,7 @@ function DjuninGraph(container_id, url) {
 		var graph = this;
 		var groups = [];
 
+		// group all datarows based on the name and the 'negative'/'sameas' graph option
 		for (var i=0; i < this.datarows.all.length; i++) {
 			var datarow = this.datarows.all[i];
 			if (datarow.sameas) {
@@ -373,6 +374,14 @@ function DjuninGraph(container_id, url) {
 			var group = groups[i];
 			var primary_datarow = group[0];
 			var label = primary_datarow.label || primary_datarow.name;
+
+			// if one row has .sameas set, use this datarow's label/name property
+			$.each(group, function(idx, dr) {
+				if (dr.sameas) {
+					label = dr.label || dr.name;
+					return false;
+				}
+			});
 
 			var scale_sides = $.map(group, function(dr, x) { return dr.sameas ? '+' : '-'; });
 			var min_values = $.map(group, function(dr, x) {
