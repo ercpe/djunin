@@ -8,6 +8,9 @@
 
 {% block title %}{% if current_graph %}{{current_graph}} :: {{node}}{% else %}{{current_category}} :: {{block.super}}{% endif %}{% endblock %}
 
+
+{% block page_title %}<h1 class="page-header">{{page_title|safe}}</h1>{% endblock %}
+
 {% block content %}
 
 	{% if detailed %}
@@ -28,7 +31,12 @@
 						</div>
 
 						<div id="graph-{{current_graph.name}}-custom" class="djunin-graph"
-								data-url="{% url 'graph_data' current_graph.node.group current_graph.node.name current_graph.name 'custom' %}"
+							 	{% if subgraph_name %}
+							 		data-url="{% url 'graph_data' current_graph.node.group current_graph.node.name parent_graph.name subgraph_name 'custom' %}"
+								{% else %}
+									data-url="{% url 'graph_data' current_graph.node.group current_graph.node.name current_graph.name 'custom' %}"
+								{% endif %}
+								{% url 'graph_data' current_graph.node.group current_graph.node.name current_graph.name 'custom' %}"
 								data-graph-scope="custom"
 								data-range-start=""
 							 	data-range-end=""></div>
@@ -52,6 +60,20 @@
 					{% endfor %}
 				</ul>
 			</div>
+
+			{% if detailed and subgraphs %}
+				<label for="node-graph-category">Subgraph</label>
+				<div class="btn-group">
+					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="subgraph">
+						{{subgraph_name|default:'-- choose --'}} <span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu">
+						{% for subgraph in subgraphs %}
+							<li><a href="{% url 'graphs_graph' node.group node.name current_graph.graph_category parent_graph.name subgraph.name %}">{{subgraph}}</a></li>
+						{% endfor %}
+					</ul>
+				</div>
+			{% endif %}
 		</div>
 		<div class="col-md-5 col-md-offset-0 col-xs-4 col-xs-offset-2">
 			{% if detailed %}
@@ -70,36 +92,20 @@
 		<div id="{{graph.name}}">
 			<div class="row">
 				<div class="col-md-5">
-					<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by day</a></div>
-					<div id="graph-{{graph.name}}-day" class="djunin-graph"
-						 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'day' %}"
-							data-graph-scope="day"></div>
-					<div id="graph-{{graph.name}}-day-legend" class="djunin-graph-legend"></div>
+					{% include "djunin/graph.html" with node=node graph=graph subgraph_name=subgraph_name scope="day" %}
 				</div>
 				<div class="col-md-5{% if not detailed %} hidden-xs{% endif %}">
-					<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by week</a></div>
-					<div id="graph-{{graph.name}}-week" class="djunin-graph"
-						 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'week' %}"
-							data-graph-scope="week"></div>
-					<div id="graph-{{graph.name}}-week-legend" class="djunin-graph-legend"></div>
+					{% include "djunin/graph.html" with node=node graph=graph subgraph_name=subgraph_name scope="week" %}
 				</div>
 			</div>
 
 			{% if detailed %}
 				<div class="row">
 					<div class="col-md-5">
-						<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by month</a></div>
-						<div id="graph-{{graph.name}}-month" class="djunin-graph"
-							 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'month' %}"
-								data-graph-scope="month"></div>
-						<div id="graph-{{graph.name}}-month-legend" class="djunin-graph-legend"></div>
+						{% include "djunin/graph.html" with node=node graph=graph subgraph_name=subgraph_name scope="month" %}
 					</div>
 					<div class="col-md-5{% if not detailed %} hidden-xs{% endif %}">
-						<div class="graph-title"><a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by year</a></div>
-						<div id="graph-{{graph.name}}-year" class="djunin-graph"
-							 	data-url="{% url 'graph_data' graph.node.group graph.node.name graph.name 'year' %}"
-								data-graph-scope="year"></div>
-						<div id="graph-{{graph.name}}-year-legend" class="djunin-graph-legend"></div>
+						{% include "djunin/graph.html" with node=node graph=graph subgraph_name=subgraph_name scope="year" %}
 					</div>
 				</div>
 			{% endif %}

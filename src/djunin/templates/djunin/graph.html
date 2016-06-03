@@ -1,0 +1,11 @@
+<div class="graph-title">
+	{% if subgraph_name %}
+		<a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category parent_graph.name subgraph_name %}" title="{{graph}}">{{graph}} - by {{scope}}</a>
+	{% else %}
+		<a class="text-muted" href="{% url 'graphs_graph' graph.node.group graph.node.name graph.graph_category graph.name %}" title="{{graph}}">{{graph}} - by {{scope}}</a>
+	{% endif %}
+</div>
+<div id="graph-{{graph.name}}-{{scope}}" class="djunin-graph"
+		data-url="{% if subgraph_name %}{% url 'graph_data' graph.node.group graph.node.name parent_graph.name subgraph_name scope %}{% else %}{% url 'graph_data' graph.node.group graph.node.name graph.name scope %}{% endif %}"
+		data-graph-scope="{{scope}}"></div>
+<div id="graph-{{graph.name}}-{{scope}}-legend" class="djunin-graph-legend"></div>

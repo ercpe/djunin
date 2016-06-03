@@ -3,6 +3,7 @@ import datetime
 import time
 import pytz
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.http import http_date
@@ -48,9 +49,16 @@ class GraphsListView(NodesListView):
 		super(GraphsListView, self).__init__(*args, **kwargs)
 		self._node = None
 		self._current_graph = None
+		self._subgraphs = None
+
+		self._parent_graph = None
+		self._subgraph = None
 
 	def get_page_title(self):
-		return self.current_graph or self.node.name
+		if self.subgraph:
+			return "%s &raquo; %s" % (self.parent_graph.graph_title or self.parent_graph.name,
+									  self.subgraph.graph_title or self.subgraph.name)
+		return self.graph or self.node.name
 
 	@property
 	def node(self):
@@ -60,35 +68,53 @@ class GraphsListView(NodesListView):
 		return self._node
 
 	@property
+	def parent_graph(self):
+		if self._parent_graph is None and self.kwargs.get('graph_name', None):
+			self._parent_graph = get_object_or_404(Graph.objects.filter(node=self.node, name=self.kwargs['graph_name']))
+		return self._parent_graph
+
+	@property
+	def subgraph(self):
+		if self._subgraph is None and self.kwargs.get('subgraph_name', None):
+			self._subgraph = get_object_or_404(Graph.objects.filter(node=self.node, parent=self.parent_graph, name=self.kwargs['subgraph_name']))
+		return self._subgraph
+
+	@property
+	def graph(self):
+		return self.subgraph or self.parent_graph
+
+	@property
 	def current_category(self):
 		return self.kwargs['graph_category']
 
 	@property
-	def current_graph(self):
-		graph_name = self.kwargs.get('graph_name', None)
-		if graph_name:
-			if not self._current_graph:
-				self._current_graph = get_object_or_404(Graph.objects.filter(node=self.node, name=graph_name))
-			return self._current_graph
-
-		return graph_name
+	def subgraphs(self):
+		if self._subgraphs is None:
+			self._subgraphs = Graph.objects.filter(parent=self.parent_graph)
+		return self._subgraphs
 
 	def get_context_data(self, **kwargs):
 		kwargs.setdefault('node', self.node)
 		kwargs.setdefault('selected_group', self.node.group)
 		kwargs.setdefault('current_category', self.current_category)
-		kwargs.setdefault('current_graph', self.current_graph)
+		kwargs.setdefault('parent_graph', self.parent_graph)
+		kwargs.setdefault('current_graph', self.graph)
+		kwargs.setdefault('subgraph_name', self.kwargs.get('subgraph_name', None))
 		kwargs.setdefault('detailed', 'graph_name' in self.kwargs)
+		kwargs.setdefault('subgraphs', self.subgraphs)
 		return super(GraphsListView, self).get_context_data(nodes=super(GraphsListView, self).get_queryset(), **kwargs)
 
 	def get_queryset(self):
 		logger.debug("Filter by category: %s", self.current_category)
 		q = super(ListView, self).get_queryset().\
-			filter(node=self.node, parent=None, graph_category=self.current_category)
+			filter(node=self.node, graph_category=self.current_category)
 
-		if self.current_graph:
-			logger.debug("Filter by graph: %s", self.current_graph)
-			q = q.filter(pk=self.current_graph.pk)
+		if not self.subgraph:
+			q = q.filter(parent = None)
+
+		if self.graph:
+			logger.debug("Filter by graph: %s", self.graph)
+			q = q.filter(pk=self.graph.pk)
 
 		return q.select_related('node').order_by('graph_category', 'name')
 
@@ -118,7 +144,11 @@ class GraphDataView(BaseViewMixin, DetailView):
 		return self._node
 
 	def get_queryset(self):
-		return Graph.objects.filter(node=self.node, name=self.kwargs['name'])
+		if 'parent_name' in self.kwargs:
+			return Graph.objects.filter(node=self.node,
+										parent__name=self.kwargs['parent_name'])
+		else:
+			return Graph.objects.filter(node=self.node, name=self.kwargs['name'])
 
 	def render_to_response(self, context, **response_kwargs):
 		try:
