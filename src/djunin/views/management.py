@@ -15,6 +15,8 @@ class ManagementView(BaseViewMixin, FormView):
 	page_title = _('Management')
 	form_class = ManagementUpdateForm
 	success_url = reverse_lazy('manage')
+	brand_title =  _('Management')
+	brand_url = reverse_lazy('manage')
 
 	@method_decorator(staff_member_required)
 	def dispatch(self, request, *args, **kwargs):
@@ -24,3 +26,5 @@ class ManagementView(BaseViewMixin, FormView):
 		Updater().run()
 		messages.add_message(self.request, messages.INFO, 'Nodes and graphs successfully updated')
 		return super(ManagementView, self).form_valid(form)
+
+
