@@ -1,0 +1,16 @@
+{% extends "djunin/management/_template.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block content %}
+
+	{% bootstrap_messages %}
+
+	<form action="" method="post">
+		{% csrf_token %}
+		{{form}}
+		<button class="btn btn-primary">{%  trans 'Update nodes and graphs' %}</button>
+	</form>
+
+{% endblock %}

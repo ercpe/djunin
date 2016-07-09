@@ -9,12 +9,12 @@ class BaseViewMixin(object):
 
 	@property
 	def all_node_groups(self):
-		return Node.objects.values_list('group', flat=True).order_by('group').distinct()
+		return Node.objects.for_user(self.request.user).values_list('group', flat=True).order_by('group').distinct()
 
 	@property
 	def group_nodes(self):
 		if 'group' in self.kwargs:
-			return Node.objects.filter(group=self.kwargs['group'])
+			return Node.objects.for_user(self.request.user).filter(group=self.kwargs['group'])
 
 	def get_context_data(self, **kwargs):
 		d = kwargs

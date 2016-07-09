@@ -1,13 +1,72 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth.models import Group
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+
 from djunin.models.base import ModelBase
 from django.db import models
 
 class MuninObjectManagerBase(models.Manager):
 	pass
 
+
+class DjuninPermissionManagerBase(models.Manager):
+
+	prefix = None
+
+	def permission_filter(self, user, prefix=None):
+		if prefix:
+			object_id_field = "%s__%s" % (prefix, "permissions__object_id")
+			object_ct_field = "%s__%s" % (prefix, "permissions__object_ct")
+		else:
+			object_id_field = "permissions__object_id"
+			object_ct_field = "permissions__object_ct"
+
+		return Q(**{
+			object_id_field: user.pk,
+			object_ct_field: ContentType.objects.get_for_model(user)
+		}) | Q(**{
+			object_ct_field: ContentType.objects.get_for_model(Group),
+			"%s__in" % object_id_field: [g.pk for g in user.groups.all()]
+		})
+
+	def for_user(self, user):
+		if not user:
+			return self.get_queryset().empty()
+
+		if user.is_superuser:
+			return self.get_queryset()
+
+		return self.get_queryset().filter(self.permission_filter(user, self.prefix))
+
+
+class DjuninNodePermissionManager(DjuninPermissionManagerBase):
+
+	def get(self, user, group, node):
+		return self.for_user(user).filter(group=group, name=node)
+
+
+class DjuninGraphPermissionManager(DjuninPermissionManagerBase):
+
+	prefix = 'node'
+
+	def get(self, user, node, name):
+		return self.for_user(user).filter(node=node, name=name)
+
+	def get_subgraph(self, user, node, parent_graph, name):
+		return self.for_user(user).filter(node=node, parent=parent_graph, name=name)
+
+
+class DjuninDatarowPermissionManager(DjuninPermissionManagerBase):
+
+	prefix = 'graph__node'
+
+
 class Node(ModelBase):
 	group = models.CharField(max_length=250, db_index=True)
 	name = models.CharField(max_length=250, db_index=True)
+
+	objects = DjuninNodePermissionManager()
 
 	def __init__(self, *args, **kwargs):
 		super(Node, self).__init__(*args, **kwargs)
@@ -46,6 +105,8 @@ class Graph(ModelBase):
 	graph_vlabel = models.CharField(max_length=200, blank=True)
 	graph_width = models.IntegerField(null=True)
 
+	objects = DjuninGraphPermissionManager()
+
 	def __str__(self):
 		return self.graph_title or self.name
 
@@ -75,6 +136,8 @@ class DataRow(ModelBase):
 	update_rate = models.IntegerField(null=True, blank=True)
 	warning = models.CharField(max_length=100, null=True, blank=True)
 	extinfo = models.TextField(null=True, blank=True)
+
+	objects = DjuninDatarowPermissionManager()
 
 	class Meta(ModelBase.Meta):
 		unique_together = 'graph', 'name'

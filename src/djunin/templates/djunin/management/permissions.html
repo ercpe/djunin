@@ -1,0 +1,42 @@
+{% extends "djunin/management/_template.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block styles %}
+	<link href="{% static 'bootstrap-tokenfield/css/bootstrap-tokenfield.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{% static 'bootstrap-tokenfield/bootstrap-tokenfield.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+	{% bootstrap_messages %}
+
+	<table class="table table-condensed">
+		<tr>
+			<th>{%  trans 'Node' %}</th>
+			<th>{%  trans 'Groups' %}</th>
+			<th>{%  trans 'User' %}</th>
+		</tr>
+
+		{%  for node in nodes %}
+			<tr>
+				<td>{{ node }}</td>
+				<td>
+					{% for g in node.permissions.group_permissions %}
+						{{ g.object }}{% if not forloop.last %}, {% endif %}
+					{% endfor %}
+				</td>
+				<td>
+					{% for u in node.permissions.user_permissions %}
+						{{ u.object }}{% if not forloop.last %}, {% endif %}
+					{% endfor %}
+				</td>
+			</tr>
+		{%  endfor %}
+	</table>
+
+{% endblock %}

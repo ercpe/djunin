@@ -28,7 +28,7 @@ class NodesListView(BaseViewMixin, ListView):
 		return self.kwargs.get('group', self.page_title)
 
 	def get_queryset(self):
-		nodes = Node.objects.all()
+		nodes = Node.objects.for_user(self.request.user).all()
 
 		if 'group' in self.kwargs:
 			nodes = nodes.filter(group=self.kwargs['group'])
@@ -64,19 +64,20 @@ class GraphsListView(NodesListView):
 	def node(self):
 		if self._node is None:
 			logger.debug("Searching node: %s/%s", self.kwargs['group'], self.kwargs['node'])
-			self._node = get_object_or_404(Node.objects.filter(group=self.kwargs['group'], name=self.kwargs['node']))
+			self._node = get_object_or_404(Node.objects.get(self.request.user, self.kwargs['group'], self.kwargs['node']))
 		return self._node
 
 	@property
 	def parent_graph(self):
 		if self._parent_graph is None and self.kwargs.get('graph_name', None):
-			self._parent_graph = get_object_or_404(Graph.objects.filter(node=self.node, name=self.kwargs['graph_name']))
+			#Graph.objects.filter(node=self.node, name=self.kwargs['graph_name'])
+			self._parent_graph = get_object_or_404(Graph.objects.get(self.request.user, self.node, self.kwargs['graph_name']))
 		return self._parent_graph
 
 	@property
 	def subgraph(self):
 		if self._subgraph is None and self.kwargs.get('subgraph_name', None):
-			self._subgraph = get_object_or_404(Graph.objects.filter(node=self.node, parent=self.parent_graph, name=self.kwargs['subgraph_name']))
+			self._subgraph = get_object_or_404(Graph.objects.get_subgraph(self.request.user, self.node, self.parent_graph, self.kwargs['subgraph_name']))
 		return self._subgraph
 
 	@property
@@ -90,7 +91,7 @@ class GraphsListView(NodesListView):
 	@property
 	def subgraphs(self):
 		if self._subgraphs is None:
-			self._subgraphs = Graph.objects.filter(parent=self.parent_graph)
+			self._subgraphs = Graph.objects.for_user(self.request.user).filter(parent=self.parent_graph)
 		return self._subgraphs
 
 	def get_context_data(self, **kwargs):
