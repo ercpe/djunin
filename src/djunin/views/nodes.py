@@ -44,6 +44,7 @@ class GraphsListView(NodesListView):
 	model = Graph
 	context_object_name = 'graphs'
 	sidebar_item = 'nodes'
+	template_name = 'djunin/graph_list.html'
 
 	def __init__(self, *args, **kwargs):
 		super(GraphsListView, self).__init__(*args, **kwargs)
@@ -111,13 +112,16 @@ class GraphsListView(NodesListView):
 			filter(node=self.node, graph_category=self.current_category)
 
 		if not self.subgraph:
-			q = q.filter(parent = None)
+			q = q.filter(parent=None)
 
 		if self.graph:
 			logger.debug("Filter by graph: %s", self.graph)
 			q = q.filter(pk=self.graph.pk)
 
-		return q.select_related('node').order_by('graph_category', 'name')
+		q = q.select_related('node').order_by('graph_category', 'name')
+		
+		q = list(q)
+		return sorted(q, key=lambda item: (len(item.name.split('_')), item.name.split('_')))
 
 	def get(self, request, *args, **kwargs):
 		if not self.kwargs.get('graph_category', None):
