@@ -120,8 +120,7 @@ class GraphsListView(NodesListView):
 
 		q = q.select_related('node').order_by('graph_category', 'name')
 		
-		q = list(q)
-		return sorted(q, key=lambda item: (len(item.name.split('_')), item.name.split('_')))
+		return self.model.objects.munin_ordered(q)
 
 	def get(self, request, *args, **kwargs):
 		if not self.kwargs.get('graph_category', None):

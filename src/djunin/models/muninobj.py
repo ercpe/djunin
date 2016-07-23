@@ -10,6 +10,11 @@ class MuninObjectManagerBase(models.Manager):
 	pass
 
 
+class MuninOrderMixin(object):
+	
+	def munin_ordered(self, qs):
+		return sorted(list(qs), key=lambda item: (len(item.name.split('_')), item.name.split('_')))
+
 class DjuninPermissionManagerBase(models.Manager):
 
 	prefix = None
@@ -62,6 +67,10 @@ class DjuninDatarowPermissionManager(DjuninPermissionManagerBase):
 	prefix = 'graph__node'
 
 
+class GraphManager(MuninOrderMixin, DjuninGraphPermissionManager):
+	pass
+
+
 class Node(ModelBase):
 	group = models.CharField(max_length=250, db_index=True)
 	name = models.CharField(max_length=250, db_index=True)
@@ -105,7 +114,7 @@ class Graph(ModelBase):
 	graph_vlabel = models.CharField(max_length=200, blank=True)
 	graph_width = models.IntegerField(null=True)
 
-	objects = DjuninGraphPermissionManager()
+	objects = GraphManager()
 
 	def __str__(self):
 		return self.graph_title or self.name
