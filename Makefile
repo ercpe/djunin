@@ -24,6 +24,12 @@ compile_optimized:
 coverage:
 	coverage erase
 	cd src && PYTHONPATH="..:." DJANGO_SETTINGS_MODULE="test_settings" coverage run --source='.' --rcfile ../.coveragerc manage.py test
+	cd src && coverage xml -i
 	cd src && coverage report -m
 
+sonar:
+#	/usr/local/bin/sonar-scanner/bin/sonar-scanner -Dsonar.projectVersion=$(VERSION)
+	/usr/local/bin/sonar-scanner/bin/sonar-scanner
+
 travis: compile compile_optimized test_default_python coverage
+jenkins: travis sonar
