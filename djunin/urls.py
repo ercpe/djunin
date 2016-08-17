@@ -16,16 +16,16 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
-
+from django.contrib.auth import views as auth_views
 from djunin.views.management import ManagementPermissionsView, ManagementIndexView, ManagementUpdateView
 from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
 from djunin.views.search import SearchView, JumpToView
 
 urlpatterns = [
 	url(r'^admin/', include(admin.site.urls)),
-	url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
-	url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='logout'),
-	url(r'^opensearch/', include('opensearch.urls')),
+	url(r'^accounts/login/$', auth_views.login, name='login'),
+	url(r'^accounts/logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
+	#url(r'^opensearch/', include('opensearch.urls')),
 	url(r'^jump$', JumpToView.as_view(), name='jump'),
 	url(r'^search$', SearchView.as_view(), name='search'),
 	url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<parent_name>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year|custom)\.json$', GraphDataView.as_view(), name='graph_data'),

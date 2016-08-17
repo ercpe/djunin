@@ -2,7 +2,7 @@
 django
 django-opensearch
 django-bootstrap3
-django-compressor
+django-compressor>=1.5
 pytz
 pyparsing
 -e git://code.not-your-server.de/pyrpn.git#egg=pyrpn
