@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='datarow',
             name='graph_scale',
-            field=models.BooleanField(default=2),
+            field=models.BooleanField(default=True),
             preserve_default=False,
         ),
     ]
