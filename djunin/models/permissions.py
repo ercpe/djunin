@@ -8,22 +8,22 @@ from djunin.models.base import ModelBase
 
 
 class DjuninPermissionManager(models.Manager):
-	use_for_related_fields = True
+    use_for_related_fields = True
 
-	def user_permissions(self):
-		return self.get_queryset().filter(object_ct=ContentType.objects.get_for_model(User))
+    def user_permissions(self):
+        return self.get_queryset().filter(object_ct=ContentType.objects.get_for_model(User))
 
-	def group_permissions(self):
-		return self.get_queryset().filter(object_ct=ContentType.objects.get_for_model(Group))
+    def group_permissions(self):
+        return self.get_queryset().filter(object_ct=ContentType.objects.get_for_model(Group))
 
 
 class DjuninNodePermission(ModelBase):
-	node = models.ForeignKey(Node, related_name='permissions')
-	object_id = models.PositiveIntegerField()
-	object_ct = models.ForeignKey(ContentType)
-	object = GenericForeignKey('object_ct')
+    node = models.ForeignKey(Node, related_name='permissions')
+    object_id = models.PositiveIntegerField()
+    object_ct = models.ForeignKey(ContentType)
+    object = GenericForeignKey('object_ct')
 
-	objects = DjuninPermissionManager()
+    objects = DjuninPermissionManager()
 
-	class Meta(ModelBase.Meta):
-		unique_together = 'node', 'object_ct', 'object_id'
+    class Meta(ModelBase.Meta):
+        unique_together = 'node', 'object_ct', 'object_id'

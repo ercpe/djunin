@@ -5,6 +5,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
+from django.views.generic.list import ListView
 
 from djunin.forms import ManagementUpdateForm
 from djunin.models import Node
@@ -42,13 +43,13 @@ class ManagementUpdateView(ManagementBaseViewMixin, FormView):
         return super(ManagementUpdateView, self).form_valid(form)
 
 
-class ManagementPermissionsView(ManagementBaseViewMixin, FormView):
+class ManagementPermissionsView(ManagementBaseViewMixin, ListView):
     template_name = 'djunin/management/permissions.html'
     sidebar_item = 'management_permissions'
     page_title = _('Permissions')
     form_class = ManagementUpdateForm
     success_url = reverse_lazy('management_permissions')
+    model = Node
 
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault('nodes', Node.objects.for_user(self.request.user).all())
-        return super(ManagementPermissionsView, self).get_context_data(**kwargs)
+    def get_queryset(self):
+        return Node.objects.for_user(self.request.user).all()

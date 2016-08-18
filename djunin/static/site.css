@@ -233,3 +233,10 @@ path.line3 { stroke-width: 3px; }
 path.line1.highlighted { stroke-width: 2px; }
 path.line2.highlighted { stroke-width: 3px; }
 path.line3.highlighted { stroke-width: 4px; }
+
+table.permissions-table th:first-child {
+    width: 60%;
+}
+table.permissions-table td:first-child {
+    padding-left: 20px;
+}

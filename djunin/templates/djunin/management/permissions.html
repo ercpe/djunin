@@ -15,27 +15,33 @@
 
 	{% bootstrap_messages %}
 
-	<table class="table table-condensed">
+	<table class="table table-condensed permissions-table">
 		<tr>
-			<th>{%  trans 'Node' %}</th>
+			<th></th>
 			<th>{%  trans 'Groups' %}</th>
 			<th>{%  trans 'User' %}</th>
 		</tr>
 
-		{%  for node in nodes %}
-			<tr>
-				<td>{{ node }}</td>
-				<td>
-					{% for g in node.permissions.group_permissions %}
-						{{ g.object }}{% if not forloop.last %}, {% endif %}
-					{% endfor %}
-				</td>
-				<td>
-					{% for u in node.permissions.user_permissions %}
-						{{ u.object }}{% if not forloop.last %}, {% endif %}
-					{% endfor %}
-				</td>
-			</tr>
+        {% regroup object_list by group as node_list %}
+		{%  for group in node_list %}
+            <tr>
+                <th colspan="3">{{ group.grouper }}</th>
+            </tr>
+            {%  for node in group.list %}
+                <tr>
+                    <td>{{ node }}</td>
+                    <td>
+                        {% for g in node.group_permissions %}
+                            {{ g.object }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for u in node.user_permissions %}
+                            {{ u.object }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {%  endfor %}
 		{%  endfor %}
 	</table>
 
