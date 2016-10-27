@@ -413,7 +413,7 @@ function DjuninGraph(container_id, url) {
 				if (negative) {
 					return dr.value_min != null ? dr.value_min : '-';
 				}
-				return dr.value_max != null ? gdr.value_max : '-';
+				return dr.value_max != null ? dr.value_max : '-';
 			});
 			var max_values_formatted = $.map(max_values, function(elem, idx) {
 				return graph.legendFormat(elem);
