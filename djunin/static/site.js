@@ -384,6 +384,7 @@ function DjuninGraph(container_id, url) {
 			});
 
 			var scale_sides = $.map(group, function(dr, x) { return dr.sameas ? '+' : '-'; });
+
 			var min_values = $.map(group, function(dr, x) {
 				var negative = false;
 				$.each(graph.datarows.all, function(i, other) {
@@ -393,10 +394,14 @@ function DjuninGraph(container_id, url) {
 					}
 				});
 				if (negative) {
-					return dr.value_max != null ? graph.legendFormat(dr.value_max) : '-';
+					return dr.value_max != null ? dr.value_max : '-';
 				}
-				return dr.value_min != null ? graph.legendFormat(dr.value_min) : '-';
+				return dr.value_min != null ? dr.value_min : '-';
 			});
+			var min_values_formatted = $.map(min_values, function(elem, idx) {
+				return graph.legendFormat(elem);
+			});
+
 			var max_values = $.map(group, function(dr, x) {
 				var negative = false;
 				$.each(graph.datarows.all, function(i, other) {
@@ -406,11 +411,19 @@ function DjuninGraph(container_id, url) {
 					}
 				});
 				if (negative) {
-					return dr.value_min != null ? graph.legendFormat(dr.value_min) : '-';
+					return dr.value_min != null ? dr.value_min : '-';
 				}
-				return dr.value_max != null ? graph.legendFormat(dr.value_max) : '-';
+				return dr.value_max != null ? gdr.value_max : '-';
 			});
-			var current_values = $.map(group, function(dr, x) { return dr.value_current != null ? graph.legendFormat(dr.value_current) : '-'; });
+			var max_values_formatted = $.map(max_values, function(elem, idx) {
+				return graph.legendFormat(elem);
+			});
+
+			var current_values = $.map(group, function(dr, x) { return dr.value_current != null ? dr.value_current : '-'; });
+			var current_values_formatted = $.map(current_values, function(elem, idx) {
+				return graph.legendFormat(elem);
+			});
+
 			var group_names = $.map(group, function(dr, x) { return dr.name; });
 
 			var tr = $('<tr></tr>')
@@ -424,9 +437,15 @@ function DjuninGraph(container_id, url) {
 									.text(label + (scale_sides.length > 1 ? ' (' + scale_sides.join('/') + ')' : ''))
 									.attr('title', primary_datarow.info || label)
 						)
-						.append($('<td class="small"></td>').text(min_values.join(' / ')))
-						.append($('<td class="small"></td>').text(max_values.join(' / ')))
-						.append($('<td class="small"></td>').text(current_values.join(' / ')));
+						.append($('<td class="small"></td>')
+									.text(min_values_formatted.join(' / '))
+									.attr('title', min_values.join(' / ')))
+						.append($('<td class="small"></td>')
+									.text(max_values_formatted.join(' / '))
+									.attr('title', max_values.join(' / ')))
+						.append($('<td class="small"></td>')
+									.text(current_values_formatted.join(' / '))
+									.attr('title', current_values.join(' / ')));
 
 			tr.hover(function() {
 				var highlight_datarows = $(this).data('datarow-names').split(' ');
