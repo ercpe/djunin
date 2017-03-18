@@ -5,5 +5,5 @@ from djunin.updater import Updater
 
 class Command(BaseCommand):
 
-	def handle(self, *args, **options):
-		Updater().run()
+    def handle(self, *args, **options):
+        Updater().run()
