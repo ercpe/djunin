@@ -13,6 +13,7 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
@@ -41,3 +42,12 @@ urlpatterns = [
     #url(r'^$', DashboardView.as_view(), name='dashboard'),
     url(r'^$', RedirectView.as_view(pattern_name='nodes', permanent=False), name='dashboard'),
 ]
+
+if settings.DEBUG:
+    try:
+        import debug_toolbar
+        urlpatterns += [
+            url(r'^__debug__/', include(debug_toolbar.urls)),
+        ]
+    except ImportError:
+        pass
