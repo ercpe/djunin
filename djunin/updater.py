@@ -117,10 +117,11 @@ class Updater(object):
         logger.info("Creating sub graphs")
         self.create_subgraphs(data)
 
-        self.graphs = dict(
-            self.graphs.items() +
-            [((g.node.group, g.node.name, g.parent.name, g.name), g) for g in Graph.objects.exclude(parent=None).select_related('node', 'parent')]
-        )
+        self.graphs = self.graphs.copy()
+        self.graphs.update(dict(
+            ((g.node.group, g.node.name, g.parent.name, g.name), g) for g in
+            Graph.objects.exclude(parent=None).select_related('node', 'parent')
+        ))
 
         # create datarows
         logger.info("Creating datarows")
@@ -179,7 +180,8 @@ class Updater(object):
 
     def create_datarows(self, data):
         datarow_filter = lambda row: row.datarow is not None
-        datarow_grouped = itertools.groupby(sorted(filter(datarow_filter, data)), lambda row: (row.group, row.node, row.graph, row.subgraph, row.datarow))
+        sorted_rows = sorted(filter(datarow_filter, data), key=lambda row: tuple([x or "" for x in tuple(row)]))
+        datarow_grouped = itertools.groupby(sorted_rows, lambda row: (row.group, row.node, row.graph, row.subgraph, row.datarow))
 
         def _build_datarows():
             for group_key, items in datarow_grouped:
