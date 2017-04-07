@@ -1,6 +1,5 @@
 # Project dependencies
 django
-django-opensearch
 django-bootstrap3
 django-compressor>=1.5
 pytz

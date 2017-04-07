@@ -22,13 +22,10 @@ from djunin.views.management import ManagementPermissionsView, ManagementIndexVi
 from djunin.views.nodes import NodesListView, GraphsListView, GraphDataView
 from djunin.views.search import SearchView, JumpToView
 
-from opensearch import urls as opensearch_urls
-
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^accounts/login/$', auth_views.login, name='login'),
     url(r'^accounts/logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
-    url(r'^opensearch/', include(opensearch_urls)),
     url(r'^jump$', JumpToView.as_view(), name='jump'),
     url(r'^search$', SearchView.as_view(), name='search'),
     url(r'^nodes/(?P<group>[^/]+)/(?P<node>[^/]+)/(?P<parent_name>[^/]+)/(?P<name>[^/]+)/(?P<scope>day|week|month|year|custom)\.json$', GraphDataView.as_view(), name='graph_data'),

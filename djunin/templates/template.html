@@ -1,4 +1,4 @@
-{% load opensearch_tags %}{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}{% load compress %}<!DOCTYPE html>
+{% load staticfiles %}{% load i18n %}{% load bootstrap3 %}{% load compress %}<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -15,8 +15,6 @@
 		<link href="{% static 'site.css' %}" rel="stylesheet">
 		{% block styles %}{% endblock %}
 		{% endcompress %}
-
-		{% opensearch_meta %}
 	</head>
 	<body>
 		<nav class="navbar navbar-inverse navbar-fixed-top">

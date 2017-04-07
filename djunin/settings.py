@@ -38,7 +38,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap3',
-    'opensearch',
     'compressor',
     'djunin',
 )
@@ -107,6 +106,3 @@ LOGIN_REDIRECT_URL = '/'
 COMPRESS_ROOT = os.path.join(BASE_DIR, '../cache')
 COMPRESS_ENABLED = True
 STATICFILES_FINDERS = ["django.contrib.staticfiles.finders.FileSystemFinder", "django.contrib.staticfiles.finders.AppDirectoriesFinder", 'compressor.finders.CompressorFinder',]
-
-OPENSEARCH_SHORT_NAME="Djunin"
-OPENSEARCH_SEARCH_URL="jump"
