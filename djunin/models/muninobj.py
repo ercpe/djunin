@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
+from djunin.fields import YesNoBooleanField
 from djunin.models.base import ModelBase
 from django.db import models
 
@@ -117,13 +118,13 @@ class Graph(ModelBase):
     graph_args_base = models.IntegerField(null=True, blank=True)
     graph_args_lower_limit = models.BigIntegerField(null=True, blank=True)
     graph_args_upper_limit = models.BigIntegerField(null=True, blank=True)
-    graph_args_rigid = models.BooleanField(default=False)
+    graph_args_rigid = YesNoBooleanField(default=False)
     graph_category = models.CharField(max_length=250)
     graph_info = models.TextField(blank=True)
     graph_order = models.TextField(blank=True)
     graph_period = models.CharField(max_length=150, blank=True, default='second')
     graph_printf = models.CharField(max_length=150, blank=True)
-    graph_scale = models.BooleanField(default=True)
+    graph_scale = YesNoBooleanField(default=True)
     graph_title = models.CharField(max_length=200, blank=True)
     graph_total = models.CharField(max_length=200, blank=True)
     graph_vlabel = models.CharField(max_length=200, blank=True)
@@ -149,7 +150,7 @@ class DataRow(ModelBase):
     colour = models.CharField(max_length=7, null=True, blank=True)
     critical = models.CharField(max_length=100, null=True, blank=True)
     draw = models.CharField(max_length=100, null=True, blank=True)
-    do_graph = models.BooleanField(default=True)
+    do_graph = YesNoBooleanField(default=True)
     graph_data_size = models.CharField(max_length=50, null=True, blank=True)
     info = models.TextField(null=True, blank=True)
     label = models.CharField(max_length=200, null=True, blank=True)
