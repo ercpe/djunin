@@ -185,9 +185,11 @@ a.nav-group-node { font-size: 12px; padding-top: 7px !important; padding-bottom:
 .datarow-current { text-align: right; padding-right: 0px; }
 
 @media (max-width: 768px) {
-	.main h1.page-header { font-size: 26px; }
+	.main h1.page-header { font-size: 26px; overflow: hidden; }
 
 	.main ul { padding-left: 20px; }
+
+    .node-title { overflow: hidden; }
 }
 
 

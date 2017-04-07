@@ -3,7 +3,7 @@
 {% block content %}
 	{% regroup nodes by group as grouped_nodes %}
 	{% for group in grouped_nodes %}
-		<h2>{{group.grouper}}</h2>
+		<h2 class="node-title">{{group.grouper}}</h2>
 		<ul>
 			{% for node in group.list %}
 				<li>
