@@ -5,7 +5,11 @@ import logging
 
 from django.conf import settings
 
-import rrdtool
+try:
+    import rrdtool
+except ImportError:
+    import rrdtool_cffi as rrdtool
+
 from rpn import RPN
 
 logger = logging.getLogger(__file__)
@@ -95,7 +99,7 @@ class GraphDataGenerator(object):
                 [datafile, 'AVERAGE', date_range_start, date_range_end])
             
             for dt, value in zip(
-                    (x * 1000 for x in xrange(self._start, self._end - self._resolution, self._resolution)),
+                    (x * 1000 for x in range(self._start, self._end - self._resolution, self._resolution)),
                     (x[0] for x in data)
             ):
                 
