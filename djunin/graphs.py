@@ -21,6 +21,13 @@ SCOPE_YEAR = 4
 SCOPE_RANGE = 5
 
 
+def max_not_none(iter, default=None):
+    if iter is None:
+        return default
+    items = [x for x in iter if x is not None]
+    return max(items) if items else default
+
+
 class GraphDataGenerator(object):
     def __init__(self, node, graph, scope_name, range_start=None, range_end=None):
         self.data_scope_name = scope_name
@@ -147,7 +154,7 @@ class D3GraphDataGenerator(GraphDataGenerator):
     @property
     def y_max(self):
         if self._y_max is None:
-            self._y_max = max([max(v.values()) for _, v in self.graph_data])
+            self._y_max = max_not_none([max_not_none(v.values()) for _, v in self.graph_data])
         return self._y_max
     
     @property
