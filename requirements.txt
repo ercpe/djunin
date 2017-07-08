@@ -5,3 +5,4 @@ django-compressor>=1.5
 pytz
 pyparsing
 -e git://code.not-your-server.de/pyrpn.git#egg=pyrpn
+rrdtool_cffi
